@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title>category父子模版</title>
+<link rel="stylesheet" type="text/css" href="../css/mui.min.css" />
+<link rel="stylesheet" type="text/css" href="../css/own.css" />
+<link rel="stylesheet" href="http://at.alicdn.com/t/font_665678_e8qezk1qhdqdunmi.css" />
+<style type="text/css">
+
+.filter-cross{position: fixed;top: 0; left: 0;z-index: 3;width:100%;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:nowrap;-moz-flex-wrap:nowrap;-ms-flex-wrap:nowrap;-o-flex-wrap:nowrap;flex-wrap:nowrap;-webkit-box-pack:flex-start;-webkit-justify-content:flex-start;-ms-flex-pack:flex-start;justify-content:flex-start;height:40px;background:#fff;border-bottom:1px solid #ececec;}
+.filter-cross>div{height:40px;-webkit-box-flex:1;-webkit-flex:1;-ms-flex:1;flex:1;text-align:center;line-height:40px;font-size:13px;color:#9b9b9b;}
+.filter-cross span{width: auto;}
+.filter-cross>div.now{color:#f52a3c;}
+.filter-cross>div.have-triangle{display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-flex-wrap:nowrap;-moz-flex-wrap:nowrap;-o-flex-wrap:nowrap;flex-wrap:nowrap;-webkit-box-pack:center;-webkit-justify-content:center;-ms-flex-pack:center;justify-content:center;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;}
+.filter-cross>div.have-triangle .triangle{width:10px;height:12px;display:-webkit-box;display:-webkit-flex;display:-ms-flexbox;display:flex;-webkit-box-orient:vertical;-webkit-flex-direction:column;-ms-flex-direction:column;flex-direction:column;-webkit-box-align:center;-webkit-align-items:center;-ms-flex-align:center;align-items:center;margin-left:2px;}
+.filter-cross>div.have-triangle .triangle > div.up{width:0;height:0;margin-bottom: 2px;border-left:4px solid transparent;border-right:4px solid transparent;border-bottom:5px solid #ccc;}
+.filter-cross>div.have-triangle .triangle>div.up.now{    border-bottom-color: #f52a3c;}
+.filter-cross>div.have-triangle .triangle > div.down{width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid #ccc;}
+.filter-cross>div.have-triangle .triangle > div.down.now,.filter-cross>div.have-triangle .triangle > div.up.now{border-top-color:#f52a3c;}
+
+
+.mui-pull-top-tips{top: 0px;}
+</style>
+</head>
+
+<body class="own-gray-color">
+
+	<div class="mui-content own-content-padding">
+		
+		<div class="filter-cross">
+			<div type-id="0" class="now">综合</div>
+			<div type-id="1" class="have-triangle">
+				<span>价格</span>
+				<div class="triangle">
+					<div class="up"></div>
+					<div class="down"></div>
+				</div>
+			</div>
+			<div type-id="2" class="have-triangle">					
+				<span>销量</span>
+				<div class="triangle">
+					<div class="up"></div>
+					<div class="down"></div>
+				</div>
+			</div>
+			<div type-id="3" class="have-triangle">
+				<span>折扣</span>
+				<div class="triangle">
+					<div class="up"></div>
+					<div class="down"></div>
+				</div>
+			</div>
+		</div>
+		
+		<div id="recommend" class="recommend-wrapper" style="padding-top: 40px;">
+			<!--<a href="1" class="recommend-item active">
+				<div class="image-wrapper"><img src="../img/1.jpg" width="100%" height="100%" ></div>
+				<div class="goods-info">
+					<div class="name hzline1 c2 fz15">大叔大婶撒大萨大大叔大婶撒大萨大叔大婶撒大萨大叔大婶撒大萨大叔大婶撒大萨</div>
+					<div class="type fz13 c3">200片/包</div>
+					<div class="discount fz10 b1 c">立减0元</div>
+					<div class="fz12 c3"><span class="fz18 c1">￥99</span> 元/32cm <i class="fr iconfont icon-mimaxiugai c1"></i></div>
+				</div>
+			</a>-->
+		</div>
+		
+		<div class="loading-tips" style="display: none;">数据加载中...</div>
+		<div class="goTop b1 c">Top</div>
+		
+	</div>
+
+<script src="../js/jquery-1.11.1.min.js" charset="UTF-8"></script>
+<script src="../js/mui.min.js" charset="UTF-8"></script>
+<script src="../js/mui.pullToRefresh.js"></script>
+<script src="../js/mui.pullToRefresh.material.js"></script>
+<script src="../js/ajax.js" charset=""></script>
+<script src="../js/Urls.js" charset=""></script>
+<script src="../js/own.js" charset="UTF-8"></script>
+
+<script type="text/javascript" charset="UTF-8">
+
+	mui.init({
+		swipeBack: true
+	});
+
+	mui.plusReady(function() {
+		var categorydetailWebview = plus.webview.currentWebview();
+		mui.fire(categorydetailWebview.parent(), 'getExtendOptions', {});
+		//紧接着获取父页面返回的productid事件
+		window.addEventListener('postExtendOptions', function(e) {
+			console.log(JSON.stringify(e.detail.extendOptions));
+			if(e.detail.extendOptions.categoryID){
+				page.filter_data.category_id = e.detail.extendOptions.categoryID;
+			}else if(e.detail.extendOptions.searchValue){
+				page.filter_data.goods_name = e.detail.extendOptions.searchValue;
+			}
+			//初始化数据
+			page.init();
+		}, false);
+		/*//监听页面hide事件，当页面返回的时候将里面的数据清空
+		categorydetailWebview.addEventListener('hide', function() {
+			
+		}, false);*/
+	});
+	
+var page = {
+	pullToRefresh: null,
+	isComplete: false,
+	ajaxLock: false,
+	init: function(){
+		this.initProduct();
+		this.initEvent();
+	},
+	// 请求参数
+	filter_data: {
+		appid: "APPID",
+		brand_id: 0,
+		district_id: 0,
+		page: 1,
+		page_num: 50,
+		order_field: 0,	//0综合 1价格 2销量 3折扣
+		order_type: 0,	//0降序 1升序
+		member_id: localStorage.getItem("memberId"),
+		/*goods_name: '',
+		category_id: ''	*/
+	},
+	sortProduct: function(){
+		var class_name = $(this).attr('class'), type_id = $(this).attr('type-id');
+		if(type_id==0){
+			if(class_name.indexOf('now') != -1) return false;
+			$('.triangle > div').removeClass('now');
+			$(this).addClass('now').siblings().removeClass("now");
+			page.filter_data.order_field = 0;
+			page.filter_data.order_type = 0;
+		}else{
+			$(this).addClass("now").siblings().removeClass("now");
+			$('.down,.up').removeClass('now');
+			if(class_name.indexOf('now')!=-1){
+				if(page.filter_data.order_type == 0){
+					page.filter_data.order_type = 1;
+					$(this).find('.up').addClass('now');
+				}else{
+					page.filter_data.order_type = 0;
+					$(this).find('.down').addClass('now');						
+				}
+			}else{
+				$('.triangle > div').removeClass('now');
+				$(this).addClass('now');
+				page.filter_data.order_field = type_id;
+				page.filter_data.order_type = 0;
+				$(this).find('.down').addClass('now');
+			}
+		}
+		page.filter_data.page = 1;
+		page.initProduct();
+	},
+	initProduct(isRefresh){
+		var _this = this;
+		request.ajax({url: Urls.getGoodsByCategoryDistrictBrand, data: page.filter_data}, function(data){
+			if(isRefresh) _this.pullToRefresh.endPullDownToRefresh();
+			console.log("getGoodsByCategoryDistrictBrand=========="+JSON.stringify(data))
+			if(data.code == 1){
+				_this.productlistHtml(data.data, true)
+			}
+		}, function(){
+			if(isRefresh) _this.pullToRefresh.endPullDownToRefresh();
+		}, true);
+	},
+	productlistHtml: function(data, mark){
+		if(data.length == 0 && page.filter_data.page == 1){
+			$('#recommend').html(pageStatus.notResult);
+			return;
+		}
+		
+		var html = '';
+		data.forEach(function(item, index) {
+			html += "<a href='1' class='recommend-item active' data-data='"+JSON.stringify(item)+"'>"+
+			"	<div class='image-wrapper'><img src='"+(locationPath + item.img1)+"' width='100%' height='100%' ></div>"+
+			"	<div class='goods-info'>"+
+			"		<div class='name hzline1 c2 fz15'>"+item.goodsName+"</div>"+
+			"		<div class='type fz13 c3'>"+item.describe+"</div>"+
+			"		<div class='discount fz10 b1 c'>立减"+item.delMoney+"元</div>"+
+			"		<div class='fz12 c3'><span class='fz18 c1'>¥"+item.price+"</span> 元/"+item.unit+" <i class='share fr iconfont icon-iconfontzhizuobiaozhun20 c1 fz23'></i></div>"+
+			"	</div>"+
+			"</a>";
+		});
+		$('#recommend')[mark ? 'html' : 'append'](html);
+	},
+	initEvent(){
+		// 设置下拉刷新
+		var _this = this
+		mui(".mui-content").pullToRefresh({
+			down: {
+				callback: function(){
+					_this.pullToRefresh = this;
+					_this.filter_data.page = 1;
+					_this.initProduct(true);
+				}
+			}
+		});
+		// 点击商品
+		mui('#recommend').on('tap', 'a', function() {
+			var data = JSON.parse(this.getAttribute('data-data'));
+			//弹入分类商品列表
+			pushWebView({
+				webType: 'newWebview_Second',
+				id: 'Home/product-detail-new-needtem.html',
+				href: 'Home/product-detail-new-needtem.html',
+				aniShow: getaniShow(),
+				title: '商品详情',
+				isBars: false,
+				barsIcon: '',
+				extendOptions: data
+			})
+		});
+		
+		mui('#recommend').on('tap', '.share', function(e) {
+			e.stopPropagation();
+			var data = JSON.parse(this.parentElement.parentElement.parentElement.getAttribute("data-data"));
+			plus.nativeUI.actionSheet( {title:"图文推广",cancel:"取消",buttons:[{title:"链接分享"},{title:"二维码分享"}]}, function(e){
+				mui.toast(e.index)
+			});
+		});
+		
+		$('.filter-cross > div').on('click', this.sortProduct);
+		$(".goTop").on("click",function(){$(window).scrollTop(0)});
+		$(window).scroll(function(){
+			var Top = document.documentElement.scrollTop || document.body.scrollTop , innerH = window.innerHeight , windH = document.body.offsetHeight;
+			$(".goTop")[Top >= 150 ? 'show' : 'hide']();
+			if(page.isComplete && page.ajaxLock) {
+				if(windH - (Top + innerH) <= 10){
+					console.log("请求分页数据");
+					page.isComplete = false;
+					page.ajaxLock = false;
+					
+					setTimeout(function(){
+						console.log("加载数据");
+						page.isComplete = true;
+						page.ajaxLock = true;
+					}, 2000);
+				}
+			}
+		});	
+		
+	}
+}
+
+</script>
+</body>
+</html>

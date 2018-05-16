@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title>E3父子模版</title>
+
+<link rel="stylesheet" type="text/css" href="../css/mui.min.css"/>
+<link rel="stylesheet" type="text/css" href="../css/own.css"/>
+
+<style>
+
+ul{-webkit-margin-before: 0px!important;-webkit-margin-after: 0px!important;-webkit-padding-start: 0px!important;}
+
+.header-wrapper{padding: 0 10px;position: fixed;top: 0;left: 0;width: 100%;z-index: 4;line-height: 36px;}
+.list-wrapper{padding-top: 36px;min-height: 100vh;}
+.list-item{margin-top: 6px;}
+.iten-header{padding: 10px 12px;font-size: 15px;border-bottom: 1px solid #ddd;}
+.iten-header img{vertical-align: middle;margin-right: 5px;}
+
+.goods-item{display: -webkit-box;display: -ms-flexbox;display:flex;line-height: 22px;border-bottom: 1px solid #ddd;}
+.goods-item .orderName{height: 44px;}
+.goods-item .image-wrapper{-webkit-flex: 0 0 100px;-ms-flex: 0 0 100px;flex:0 0 100px;width: 100px;height: 100px;padding: 5px;}
+.goods-item .order-info{-webkit-flex: 1;-ms-flex: 1;flex: 1;padding: 5px;}
+
+
+.mui-pull-top-tips{top: 0px;}
+</style>
+
+</head>
+<body>
+	
+	
+	<div class="mui-content own-content-padding">
+		<div class="header-wrapper fz14 c2 b">
+			总访问量: <span id="totalCount">0</span>次
+		</div>
+		
+		<div class="list-wrapper" id="list-wrapper">
+			<!--<div class="list-item b">
+				<div class="iten-header">
+					<img src="../img/logo.png" width="20" height="20" />
+					<span>微密匠心</span>
+				</div>
+				<ul>
+					<li class="goods-item">
+						<div class="image-wrapper"><img src="../img/1.jpg" width="100%" height="100%" /></div>
+						<div class="order-info">
+							<div class="orderName hzline2 c2 fz14">大大大大大啊好的决赛的阿仕顿安检哦你觉得调大大大大大啊好的决赛的阿仕顿安检哦你觉得调</div>
+							<div class="order-desc fz13 c3">浏览次数:0</div>
+							<div>
+								<span class="fz12 c3">2018-08-08 12:12:12</span>
+								<a class="del fr c1 fz14" href="javascript:viod(0)">删除</a>
+							</div>
+						</div>
+					</li>
+				</ul>
+			</div>-->
+		</div>
+	</div>
+
+<script src="../js/mui.min.js" charset="UTF-8"></script>
+<script src="../js/mui.pullToRefresh.js"></script>
+<script src="../js/mui.pullToRefresh.material.js"></script>
+<script src="../js/own.js" charset="UTF-8"></script>
+<script src="../js/ajax.js" charset="UTF-8"></script>
+<script src="../js/Urls.js" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">
+	mui.init({
+		swipeBack:true
+	});
+	
+	mui.plusReady(function(){
+		
+		var currentWebview = plus.webview.currentWebview();
+		page.init();
+		currentWebview.addEventListener("show", function(){
+			page.getData();
+		});
+	});
+	
+var page = {
+	pullToRefresh: null,
+	init: function(){
+		this.initEvent();
+		this.getData();
+	},
+	initEvent: function(){
+		var _this = this;
+		mui(".list-wrapper").pullToRefresh({
+			down: {
+				callback: function(){
+					_this.pullToRefresh = this;
+					_this.getData(true);
+				}
+			}
+		});
+		mui(".list-wrapper").on('tap', '.goods-item', function(e) {
+			var data = JSON.parse(this.getAttribute("data-data"));
+			mui.toast(data.goods_name);
+		});
+		mui(".list-wrapper").on('tap', '.del', function(e) {
+			e.stopPropagation();
+			var id = this.getAttribute("data-id");
+			mui.confirm('确认删除这条记录？', '提示', ['否', '是'], function(e) {
+				if (e.index == 1) {
+					page.deleteOrder(id);
+				}
+			});
+		});
+	},
+	getData: function(isRefresh){
+		var _this = this;
+		request.ajax({url: Urls.getsharerecordsbymemberid, data: {appid: "APPID", member_id: localStorage.getItem("memberId")}}, function(data){
+			if(isRefresh) _this.pullToRefresh.endPullDownToRefresh();
+			if(data.code == 1){
+				document.getElementById("totalCount").innerText = data.data.all_total_count;
+				_this.listHtml(data.data.brand_share_record_domain_list);
+			}
+		}, function(){
+			if(isRefresh) _this.pullToRefresh.endPullDownToRefresh();
+		}, true);
+	},
+	deleteOrder: function(id){
+		request.ajax({url: Urls.getsharerecordsbymemberid, data: {appid: "APPID", member_id: localStorage.getItem("memberId")}}, function(data){
+			mui.toast(data.msg);
+			if(data.code == 1){
+				page.getData();
+			}
+		}, null, true);
+	},
+	listHtml: function(data){
+		var listWrapper = document.getElementById("list-wrapper");
+		if(data.length == 0) {
+			listWrapper.innerHTML = pageStatus.notResult;
+			return;
+		}
+		var html = '';
+		for(var i = 0, ilen = data.length; i < ilen; i++){
+			html += "<div class='list-item b active'>"+
+					"	<div class='iten-header'>"+
+					"		<img src='"+locationPath+data[i].brand_logo+"' width='20' height='20' />"+
+					"		<span>"+data[i].brand_name+"</span>"+
+					"	</div>"+
+					"	<ul>";
+					for(var j = 0, jlen = data[i].share_record_domain_list.length; j < jlen; j++){
+						var goodsData = data[i].share_record_domain_list[j];
+						html += "		<li class='goods-item' data-data='"+JSON.stringify(goodsData)+"'>"+
+						"			<div class='image-wrapper'><img src='"+locationPath+goodsData.goods_pic+"' width='100%' height='100%' /></div>"+
+						"			<div class='order-info'>"+
+						"				<div class='orderName hzline2 c2 fz14'>"+goodsData.goods_name+"</div>"+
+						"				<div class='order-desc fz13 c3'>浏览次数:"+goodsData.total_count+"</div>"+
+						"				<div>"+
+						"					<span class='fz12 c3'>"+new Date(goodsData.create_time).format("yyyy-MM-dd hh:mm:ss")+"</span>"+
+						"					<a class='del fr c1 fz14' data-id='"+goodsData.share_record_id+"' href='javascript:viod(0)'>删除</a>"+
+						"				</div>"+
+						"			</div>"+
+						"		</li>";
+					}
+					html += "	</ul></div>";
+		}
+		listWrapper.innerHTML = html;
+	}
+}
+	
+</script>
+	
+</body>
+</html>

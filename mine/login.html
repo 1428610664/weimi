@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title>E3不是父子模版，考虑其为模态视图</title>
+<link rel="stylesheet" type="text/css" href="../css/mui.min.css" />
+<link rel="stylesheet" type="text/css" href="../css/own.css" />
+<link rel="stylesheet" href="http://at.alicdn.com/t/font_665678_e8qezk1qhdqdunmi.css" />
+
+<style type="text/css">
+.mui-input-row label {width: 20%;}
+.mui-input-row label~input {width: 80%;margin-top: 5px;}
+.mui-input-group .mui-input-row{height: auto;}
+</style>
+</head>
+
+<body>
+
+	<header class="mui-bar mui-bar-nav b1">
+		<!--<button type="button" class="mui-action-back mui-btn  mui-btn-link mui-pull-left own-button">
+			<span class="own-left-nav-color">取消</span>
+		</button>-->
+		<h1 class="mui-title">登录</h1>
+	</header>
+
+	<div class="mui-content">
+		<div style="margin-top: 30px; text-align: center;">
+			<span class="mui-icon iconfont icon-guanyuwomen" style="font-size: 4em; color: #999;"></span>
+		</div>
+		<div class="mui-card" style="margin-top: 20px;">
+			<form class="mui-input-group">
+				<div class="mui-input-row">
+					<label><span class="mui-icon iconfont icon-msnui-tel fz20"></span></label>
+					<input id="account" type="text" class="mui-input-clear" value="13005326064" maxlength="11" placeholder="请输入手机号或邮箱" />
+				</div>
+				<div class="mui-input-row">
+					<label><span class="mui-icon iconfont icon-mima fz20"></span></label>
+					<input type="password" class="mui-input-clear" value="000000" placeholder="请输入密码" />
+				</div>
+			</form>
+		</div>
+		<div class="mui-button-row" style="margin: 10px 15px;">
+			<button id="loginBtn" type="button" class="mui-btn own-btn-green" style="width: 100%;padding: 10px 0px;">登录</button>
+		</div>
+		<div class="mui-button-row clear fz14" style="padding-top: 0px;">
+			<button id="register" type="button" class="mui-btn fl mui-btn-link c1 own-font-size" style="padding-top: 0px; margin-right: 60px; ">快速注册</button>
+			<button id="repsd" type="button" class="mui-btn fr mui-btn-link own-font-size c3" style="padding-top: 0px; margin-left: 60px;">忘记密码</button>
+		</div>
+
+	</div>
+
+<script src="../js/mui.min.js" charset="UTF-8"></script>
+<script src="../js/own.js" charset="UTF-8"></script>
+<script src="../js/utils.js" charset="UTF-8"></script>
+<script src="../js/md5.js" charset="UTF-8"></script>
+<script src="../js/Urls.js" charset="UTF-8"></script>
+<script src="../js/ajax.js" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">
+	mui.init({
+		swipeBack: true,
+		keyEventBind: {
+			backbutton: true
+		}
+	});
+	var loginWebview;
+	mui.plusReady(function() {
+		plus.screen.lockOrientation("portrait-primary");
+		plus.navigator.setStatusBarBackground( "#f52a3c" );
+		
+		page.init();
+		page.initTemplate();
+		
+		if(localStorage.getItem("user")){
+			var indexView = plus.webview.create("../index.html","index.html",{scrollIndicator:'none',scalable:false,popGesture:'none',render:"always"});
+			indexView.addEventListener('loaded',function(){// 页面加载完成后才显示
+				indexView.show('pop-in');
+				setTimeout(function(){
+					plus.navigator.closeSplashscreen();
+				},200);
+			},false);
+			return;	
+		}
+		
+		plus.navigator.closeSplashscreen();
+		loginWebview = plus.webview.currentWebview();
+	});
+	
+var page = {
+	init: function(){
+		this.initEvent();
+	},
+	initEvent: function(){
+		var first = null;  
+        mui.back=function(){
+        if(!first){  
+                first = new Date().getTime();  
+                mui.toast('再按一次退出应用');  
+                setTimeout(function(){  
+                    first = null;  
+                },2000);  
+            } else {  
+                if(new Date().getTime() - first < 2000){
+                    plus.runtime.quit();
+                }  
+            }  
+        };
+		// 登录
+		document.getElementById('loginBtn').addEventListener('tap', function() {
+			page.requestLogin();
+		}, false);
+		// 注册
+		document.getElementById('register').addEventListener('tap', function() {
+			pushWebView({
+				webType: 'newWebview_First',
+				id: 'mine/register-needtem.html',
+				href: 'mine/register-needtem.html',
+				aniShow: getaniShow(),
+				title: "注册",
+				isBars: false,
+				barsIcon: '',
+				extendOptions: {}
+			})
+		}, false);
+		// 忘记密码
+		document.getElementById('repsd').addEventListener('tap', function() {
+			pushWebView({
+				webType: 'newWebview_First',
+				id: 'mine/forget-psd-needtem.html',
+				href: 'mine/forget-psd-needtem.html',
+				aniShow: getaniShow(),
+				title: "忘记密码",
+				isBars: false,
+				barsIcon: '',
+				extendOptions: {}
+			})
+		}, false);
+		
+	},
+	requestLogin: function(){
+		var account = document.querySelector('input[type="text"]');
+		var psd = document.querySelector('input[type="password"]');
+		var member = account.value, password = psd.value;
+		if(HzUtils.isEmpty(member)){
+			mui.toast("账户不能为空");
+			return;
+		}
+		if(HzUtils.isEmpty(password)){
+			mui.toast("密码不能为空");
+			return;
+		}
+		request.ajax({url: Urls.login,data: {appid: 'APPID',member: member, password: hex_md5(password)}}, function(data){
+			mui.toast(data.msg);
+			console.log(JSON.stringify(data));
+			if(data.code == 0) return;
+			
+			// 设置缓存数据
+			localStorage.setItem('user', JSON.stringify(data.data));
+			localStorage.setItem('memberId', data.data.member_id);
+			// 前往首页
+			var indexView = plus.webview.create("../index.html","index.html",{scrollIndicator:'none',scalable:false,popGesture:'none',render:"always"});
+			indexView.addEventListener('loaded',function(){// 页面加载完成后才显示
+				indexView.show('pop-in');
+			},false);
+			
+		}, null, true);
+	},
+	initTemplate: function(){
+		var webview =  mui.preload({
+			id:'template',
+			url:'../template.html',
+			styles:{
+				top: '-1000px',
+			}
+		});
+		webview.show();
+	}
+}
+
+</script>
+</body>
+</html>

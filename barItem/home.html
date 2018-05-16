@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title>E3</title>
+<link rel="stylesheet" type="text/css" href="../css/mui.min.css" />
+<link rel="stylesheet" href="http://at.alicdn.com/t/font_665678_e8qezk1qhdqdunmi.css" />
+<link rel="stylesheet" type="text/css" href="../css/own.css" />
+
+<style type="text/css">
+	
+.mui-table-view:after{height:0px;}
+/*图片显示的时候设置为自动 因为 从服务器来的图片大小相同*/
+.mui-table-view.mui-grid-view .mui-table-view-cell .mui-media-object{line-height:auto;max-width:auto;height:auto;border-top-right-radius:4px;border-top-left-radius:4px;}
+.mui-table-view-cell{margin-bottom:10px;}
+.bgDiv{border:1px solid rgba(204,204,204,0.7);border-radius:5px;background-color:white;width:100%;}
+.mui-table-view.mui-grid-view .mui-table-view-cell .mui-media-body{margin-top:2px;margin-bottom:5px;height:auto;}
+.mui-table-view.mui-grid-view .mui-table-view-cell .mui-media-body p{white-space:pre;color:black;}
+.mui-table-view.mui-grid-view .mui-table-view-cell .mui-media-body p.mui-ellipsis-2{height:30px;}
+.mui-table-view.mui-grid-view .mui-table-view-cell .mui-media-body .price-one{margin-top:12px;float:left;font-size:1.1em;margin-left:7%;color:red;margin-bottom:10px;}
+.mui-table-view.mui-grid-view .mui-table-view-cell .mui-media-body .price-two{margin-top:12px;float:right;font-size:1.1em;margin-right:7%;text-decoration:line-through;}
+
+</style>
+</head>
+
+<body>
+	<div class="mui-content" style="position: relative;">
+		<div id="homeDiv" class="mui-content own-content-padding">
+			<div id="productSlider" class="mui-slider"></div>
+			
+			<div id="recommend" class="recommend-wrapper">
+				<!--<a href="1" class="recommend-item active">
+					<div class="image-wrapper"><img src="../img/1.jpg" width="100%" height="100%" ></div>
+					<div class="goods-info">
+						<div class="name hzline1 c2 fz15">大叔大婶撒大萨大大叔大婶撒大萨大叔大婶撒大萨大叔大婶撒大萨大叔大婶撒大萨</div>
+						<div class="type fz13 c3">大大啊</div>
+						<div class="discount fz10 b1 c">立减0元</div>
+						<div class="fz12 c3"><span class="fz18 c1">￥99</span> 元/32cm <i class="fr iconfont icon-mimaxiugai c1"></i></div>
+					</div>
+				<a>-->
+			</div>
+		</div>
+	</div>
+</body>
+
+<script src="../js/mui.min.js" charset="UTF-8"></script>
+<script src="../js/mui.pullToRefresh.js"></script>
+<script src="../js/mui.pullToRefresh.material.js"></script>
+<script src="../js/own.js" charset="UTF-8"></script>
+<script src="../js/ajax.js" charset="UTF-8"></script>
+<script src="../js/Urls.js" charset="UTF-8"></script>
+<script type="text/javascript">
+	mui.init({
+		swipeBack: false
+	});
+	var currentWebview;
+	var recommend;
+	mui.plusReady(function() {
+		page.init();
+		currentWebview = plus.webview.currentWebview();
+		recommend = document.getElementById('recommend');
+	});
+	
+	
+	function updateSerivces(){
+		var shares;
+		plus.share.getServices(function(s){
+			shares={};
+			for(var i in s){
+				var t=s[i];
+				shares[t.id]=t;
+			}
+			alert(JSOn.stringify(shares));
+		}, function(e){
+			alert('获取分享服务列表失败：'+e.message);
+		});
+	}
+	
+var page = {
+	pullToRefresh: null,
+	init: function(){
+		this.getBanner();
+		this.getHomeData();
+		this.initEvent();
+	},
+	initEvent: function(){
+		// 设置下拉刷新
+		var _this = this;
+		mui(".mui-content").pullToRefresh({
+			down: {
+				callback: function(){
+					_this.pullToRefresh = this;
+					_this.getHomeData(true);
+					_this.getBanner();
+				}
+			}
+		});
+		//添加每个item点击的监听事件
+		mui('#recommend').on('tap', 'a', function() {
+			var data = JSON.parse(this.getAttribute('data-data'));
+			pushWebView({
+				webType: 'newWebview_First',
+				id: 'Home/product-detail-new-needtem.html',
+				href: 'Home/product-detail-new-needtem.html',
+				aniShow: getaniShow(),
+				title: "商品详情",
+				isBars: false,
+				barsIcon: '',
+				extendOptions: data
+			});
+		});
+		
+		mui("#productSlider").on('tap', '.mui-slider-item ', function(e) {
+			var data = JSON.parse(this.getAttribute("data-data"));
+			mui.toast(data.ad_name);
+		});
+		
+		mui('#recommend').on('tap', '.share', function(e) {
+			e.stopPropagation();
+			var data = JSON.parse(this.parentElement.parentElement.parentElement.getAttribute("data-data"));
+			plus.nativeUI.actionSheet( {title:"图文推广",cancel:"取消",buttons:[{title:"链接分享"},{title:"二维码分享"}]}, function(e){
+				mui.toast(e.index)
+			});
+		});
+	},
+	getBanner: function(){
+		var _this = this;
+		request.ajax({url: Urls.homeBanner, data: {appid: "APPID"}}, function(data){
+			console.log("=====getBanner====="+JSON.stringify(data));
+			if(data.code == 1){
+				_this.bannerHtml(data.data);
+			}
+		}, null);
+	},
+	bannerHtml: function(data){
+		if(data.length == 0) return;
+		
+		var sliderItem = "", indicator = "";
+		for(var i = 0, ilen = data.length; i <ilen; i++){
+			if(i == 0){
+				sliderItem += "<div class='mui-slider-item mui-slider-item-duplicate' data-data='"+JSON.stringify(data[data.length-1])+"'>"+
+						"	<a href='#'>"+
+						"		<img src='"+locationPath+data[data.length-1].ad_pic+"'>"+
+						"	</a>"+
+						"</div>";
+			}
+			sliderItem += "<div class='mui-slider-item mui-slider-item-duplicate' data-data='"+JSON.stringify(data[i])+"'>"+
+						"	<a href='#'>"+
+						"		<img src='"+locationPath+data[i].ad_pic+"'>"+
+						"	</a>"+
+						"</div>";
+			if(i == data.length - 1){
+				sliderItem += "<div class='mui-slider-item mui-slider-item-duplicate' data-data='"+JSON.stringify(data[0])+"'>"+
+						"	<a href='#'>"+
+						"		<img src='"+locationPath+data[0].ad_pic+"'>"+
+						"	</a>"+
+						"</div>";
+			}
+			indicator += "<div class='mui-indicator "+(i == 0 ? 'mui-active': '')+"'></div>";	
+		}
+		
+		var html = "<div class='mui-slider-group mui-slider-loop'>"+sliderItem+"</div>"+
+					"<div class='mui-slider-indicator'>"+indicator+"</div>";
+		
+		document.getElementById('productSlider').innerHTML = html;
+		mui('.mui-slider').slider({interval: 3000});
+	},
+	getHomeData: function(isRefresh){
+		var _this = this;
+		request.ajax({url: Urls.home, data: {appid: "APPID",city: "深圳", member_id: localStorage.getItem("memberId")}}, function(data){
+			console.log(JSON.stringify(data));
+			if(isRefresh) _this.pullToRefresh.endPullDownToRefresh();
+			if(data.code == 1){
+				_this.recommendHtml(data.data.countryGoodsList);
+			}
+		}, function(){
+			if(isRefresh) _this.pullToRefresh.endPullDownToRefresh();
+		}, true);
+	},
+	recommendHtml: function(data){
+		var html = '';
+		data.forEach(function(item, index) {
+			html += "<a href='#' class='recommend-item active' data-data='"+JSON.stringify(item)+"'>"+
+			"	<div class='image-wrapper'><img src='"+(locationPath + item.img1)+"' width='100%' height='100%' ></div>"+
+			"	<div class='goods-info'>"+
+			"		<div class='name hzline1 c2 fz15'>"+item.goodsName+"</div>"+
+			"		<div class='type fz13 c3'>"+item.describe+"</div>"+
+			"		<div class='discount fz10 b1 c'>立减"+item.delMoney+"元</div>"+
+			"		<div class='fz12 c3'><span class='fz18 c1'>¥"+item.price+"</span> 元/"+item.unit+" <i class='share fr iconfont icon-iconfontzhizuobiaozhun20 c1 fz23'></i></div>"+
+			"	</div>"+
+			"</a>";
+		});
+		recommend.innerHTML = html;
+	}
+}
+	
+</script>
+
+</html>

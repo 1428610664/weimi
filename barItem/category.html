@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title></title>
+<link rel="stylesheet" type="text/css" href="../css/mui.min.css" />
+<link rel="stylesheet" type="text/css" href="../css/iconfont.css" />
+<link rel="stylesheet" type="text/css" href="../css/own.css" />
+<style type="text/css">
+
+.mui-content{display:flex;}
+.mui-content .stair{-webkit-flex:0 0 90px;-ms-flex:0 0 90px;flex:0 0 90px;background:#fff;height:100vh;overflow-y:auto;}
+.mui-content #categoryMovers{-webkit-flex:1;-ms-flex:1;flex:1;height:100vh;overflow-y:auto;background:#F9F9F9;}
+.mui-segmented-control .mui-control-item{line-height:46px;width:100%;text-align:center;border-left: 2px solid #fff!important;}
+.mui-segmented-control .mui-control-item img{width:25px;vertical-align:middle;}
+.mui-segmented-control.mui-segmented-control-inverted .mui-control-item.mui-active{background-color:#F9F9F9;color:#f52a3c;border-left: 2px solid #f52a3c!important;}
+.mui-table-view-cell{padding:8px;text-align:center;background-color:#F9F9F9;}
+.mui-table-view:after,.mui-table-view-cell:after{height:0px;}
+.mui-segmented-control.mui-segmented-control-inverted.mui-segmented-control-vertical .mui-control-item,.mui-segmented-control.mui-segmented-control-inverted.mui-segmented-control-vertical .mui-control-item.mui-active{border-bottom:none;}
+.mui-control-content{font-size:0.9em;}
+
+#categoryMovers{padding: 5px;}
+.category-item{ width: calc(( 100vw - 108px ) / 3); float: left; text-align: center;margin-left: 4px;}
+.category-item img{ width: calc(( 100vw - 108px ) / 3); height: calc(( 100vw - 108px ) / 3);}
+.category-item:nth-child(3n+1){margin-left: 0;}
+
+</style>
+</head>
+<body>
+	<div class="mui-content mui-row mui-fullscreen">
+		<div class="stair">
+			<div id="categoryStair" class="mui-segmented-control c2 mui-segmented-control-inverted mui-segmented-control-vertical"></div>
+		</div>
+		<div id="categoryMovers" class="clear">
+			<!--<div class="category-item">
+				<img src="../img/1.jpg"/>
+				<p class="c2">维生素</p>
+			</div>-->
+		</div>
+	</div>
+
+<script type="text/javascript" src="../js/mui.min.js"></script>
+<script type="text/javascript" src="../js/own.js"></script>
+<script type="text/javascript" src="../js/ajax.js"></script>
+<script type="text/javascript" src="../js/Urls.js"></script>
+<script type="text/javascript">
+	
+	mui.init({
+		swipeBack: false
+	})
+	mui.plusReady(function() {
+		var categoryWebview = plus.webview.currentWebview();
+		categoryWebview.addEventListener('show',function(){
+			if(!page.isComplete) page.init();
+		},false);
+	})
+
+var page = {
+	isComplete: false,
+	init: function(){
+		this.getCategoryByTopFilter();
+		this.initEvent();
+	},
+	getCategoryByTopFilter: function(){
+		var _this = this;
+		request.ajax({url: Urls.getCategoryByTopFilter, data: {parent_id: 0, appid: "APPID"}}, function(data){
+			if(data.code == 1){
+				_this.categoryByTopHtml(data.data);
+				if(data.data.length > 0) _this.getCategoryByChildFilter(data.data[0].categoryId);
+			}
+		}, null);
+	},
+	getCategoryByChildFilter: function(id){
+		var _this = this;
+		console.log(Urls.getCategoryByTopFilter +"======parent_id:"+ id);
+		request.ajax({url: Urls.getCategoryByChildFilter, data: {parent_id: id, appid: "APPID"}}, function(data){
+			if(data.code == 1){
+				_this.isComplete = true;
+				_this.categoryByChildFilterHtml(data.data);
+			}
+		}, null, true);
+	},
+	initEvent(){
+		var _this = this;
+		mui('#categoryStair').on('tap', '.mui-control-item', function() {
+			var item = this;
+			_this.getCategoryByChildFilter(item.getAttribute('href'));
+		});
+		mui('#categoryMovers').on('tap', '.category-item', function() {
+			var categoryA = this;
+			var id = 'category/category-detail-new-needtem.html';
+			var href = 'category/category-detail-new-needtem.html';
+			var categoryID = categoryA.getAttribute('data-id');
+			pushWebView({
+				webType: 'newWebview_First',
+				id: id,
+				href: href,
+				aniShow: getaniShow(),
+				title: "商品",
+				isBars: false,
+				barsIcon: '',
+				extendOptions: {categoryID: categoryID}
+			})
+		});
+	},
+	categoryByTopHtml: function(data){
+		var html = '';
+		for(var i = 0, ilen = data.length; i <ilen; i++){
+			html += '<a class="mui-control-item '+(i == 0 ? 'mui-active': '')+'" href="'+ data[i].categoryId + '"><span></span>' + data[i].categoryName + '</a>';
+		}
+		document.getElementById("categoryStair").innerHTML = html;
+	},
+	categoryByChildFilterHtml: function(data){
+		var html = '';
+		if(data.length == 0){
+			document.getElementById("categoryMovers").innerHTML = pageStatus.notResult;
+			return;
+		}
+		for(var i = 0, ilen = data.length; i <ilen; i++){
+			html += "<div class='category-item' data-id='"+data[i].categoryId+"'>"+
+					"	<img src='"+(locationPath + data[i].categoryPic)+"'/>"+
+					"	<p class='c2'>"+data[i].categoryName+"</p>"+
+					"</div>";
+		}
+		document.getElementById("categoryMovers").innerHTML = html;
+	}
+}
+
+</script>
+</body>
+
+</html>

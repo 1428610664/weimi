@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title>E3为父子模版可直接用index的父子模版</title>
+<link rel="stylesheet" type="text/css" href="../css/mui.min.css"/>
+<link rel="stylesheet" type="text/css" href="../css/own.css"/>
+<link rel="stylesheet" href="http://at.alicdn.com/t/font_665678_e8qezk1qhdqdunmi.css" />
+<style type="text/css">
+.mui-input-row label {width: 20%;}
+.mui-input-row label~input {width: 80%;margin-top: 5px;}
+.mui-input-group .mui-input-row{height: auto;}
+</style>
+</head>
+<body>
+
+	<div class="mui-content own-content-padding">
+		<div class="mui-card" style="margin-top: 30px;">
+			<form id="formDom" class="mui-input-group">
+				<div class="mui-input-row">
+					<label><span class="mui-icon iconfont icon-msnui-tel fz20"></span></label>
+					<input type="text" id="member" maxlength="11" class="mui-input-clear" placeholder="手机号" />
+				</div>
+				<div class="mui-input-row">
+					<label><span class="mui-icon iconfont icon-mima fz20"></span></label>
+					<input type="password" id="oldPsw" class="mui-input-clear" placeholder="旧密码" />
+				</div>
+				<div class="mui-input-row">
+					<label><span class="mui-icon iconfont icon-mima fz20"></span></label>
+					<input type="password" id="change_password" class="mui-input-clear" placeholder="新密码" />
+				</div>
+				<div class="mui-input-row">
+					<label><span class="mui-icon iconfont icon-chenggong fz20"></span></label>
+					<input type="password" id="change_password1" class="mui-input-clear" placeholder="确认新密码" />
+				</div>
+			</form>
+		</div>
+		<div class="mui-button-row" style="margin: 10px 15px;">
+			<button type="button" id="submitBtn" class="mui-btn mui-btn-link own-btn-green mui-btn-block" style="padding: 5px 0px;">修改密码</button>
+		</div>
+	</div>
+	
+<script src="../js/mui.min.js" charset="UTF-8"></script>
+<script src="../js/own.js" charset="UTF-8"></script>
+<script src="../js/ajax.js" charset="UTF-8"></script>
+<script src="../js/Urls.js" charset="UTF-8"></script>
+<script src="../js/utils.js" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">
+
+	mui.init({
+		swipeBack:true
+	});
+	
+	mui.plusReady(function(){
+		var currentWebview = plus.webview.currentWebview();
+		
+		page.init();
+	});
+	
+var page = {
+	init: function(){
+		this.initEvent();
+	},
+	initEvent: function(){
+		document.getElementById("submitBtn").addEventListener("tap", this.submit, false);
+	},
+	submit: function(){
+		var formDom = document.getElementById("formDom");
+		var member = formDom.member.value,
+			oldPsw = formDom.oldPsw.value,
+			change_password = formDom.change_password.value,
+			change_password1 = formDom.change_password1.value;
+		
+		var check = (!HzUtils.isEmpty(member) && !HzUtils.isEmpty(oldPsw) && !HzUtils.isEmpty(change_password) && !HzUtils.isEmpty(change_password1));
+		if(!check){
+			mui.toast("请填写完成上面信息!");
+			return;
+		}
+		if(HzUtils.isPhone(member)){
+			mui.toast("手机号错误");
+			return;
+		}
+		
+		if(change_password != change_password1){
+			mui.toast("密码不一致");
+			return;
+		}
+		
+		request.ajax({url: Urls.changePassword, data: {appid: "APPID",member: member, password: oldPsw, change_password: change_password}}, function(data){
+			console.log(JSON.stringify(data));
+			mui.toast(data.msg);
+			if(data.code == 0) return;
+			mui.back();
+		}, null, true);
+	}
+}
+	
+</script>
+	
+</body>
+</html>

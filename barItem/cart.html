@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title>E3</title>
+<link rel="stylesheet" type="text/css" href="../css/mui.min.css"/>
+<link rel="stylesheet" type="text/css" href="../css/iconfont.css"/>
+<link rel="stylesheet" type="text/css" href="../css/own.css"/>
+<style type="text/css">
+   
+#nav_bar{overflow:hidden;list-style:none;background:#fff;padding: 0!important; -webkit-padding-start: 0px!important; -webkit-margin-before: 0!important; -webkit-margin-after: 0!important;}
+#nav_bar li{width:20%;height:45px;line-height:45px;text-align:center;font-size: 13px;color:#999;box-sizing:border-box;-webkit-box-sizing:border-box;float:left;position:relative;}
+#nav_bar .select_nav{color:#f94042;}
+.flag{height:1px;position:relative;}
+.flag #now_flag{width:20%;position:absolute;background:#f94042;height:1px;transform:translateX(0);-webkit-transform:translateX(0);-moz-transform:translateX(0);-o-transform:translateX(0);transform-origin:left;-webkit-transform-origin:left;-moz-transform-origin:left;-o-transform-origin:left;transition:transform 0.3s;-webkit-transition:-webkit-transform 0.3s;-moz-transition:-moz-transform 0.3s;-o-transition:-o-transform 0.3s;}
+
+.nav-wrapper{width: 100%;height: 46px;position: fixed;top: 0;left: 0;z-index: 4;}
+</style>
+</head>
+<body>
+
+<div class="mui-content">
+	<div class="need-login" style="text-align: center; margin-top: 50px;display: none;">
+		<span class="fz13 c3">你还没有登录</span>
+		<br />
+		<button type="button" class="mui-btn own-btn-green" style="margin-top: 10px; padding: 5px 20px;">请登录</button>
+	</div>
+	
+	<div class="nav-wrapper">
+		<ul id='nav_bar'>
+			<li class='select_nav' title='-1'>全部</li>
+			<li title='0'>待付款</li>
+			<li title='1'>待发货</li>
+			<li title='2'>待收货</li>
+			<li title='12'>待评价</li>
+		</ul>	
+		<div class="flag">
+			<div id="now_flag"></div>
+		</div>
+	</div>
+	
+	<div class="wrapper" style="display: none;padding-top: 46px;">
+		订单
+	</div>
+</div>
+
+<script src="../js/jquery-1.11.1.min.js" charset="UTF-8"></script>
+<script src="../js/mui.min.js" charset="UTF-8"></script>
+<script src="../js/own.js" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">
+	mui.init({
+		swipeBack:false
+	});
+	
+	var cartSupplierItem = [];
+	var cartWebview;//当前购物车webview
+	var needlogin;//需要登录的div
+	var wrapper;
+	
+	mui.plusReady(function(){
+		cartWebview = plus.webview.currentWebview();
+		needlogin = document.querySelector('.need-login');
+		wrapper = document.querySelector('.wrapper');
+		//为登录按钮添加事件
+		document.querySelector('.need-login button').addEventListener('tap',function(){
+			var title = '登录';
+			pushWebView({
+				webType: 'newWebview_First',
+				id: 'mine/login.html',
+				href: 'mine/login.html',
+				aniShow: getaniShow(),
+				title: "登录",
+				isBars: false,
+				barsIcon: '',
+				extendOptions: {}	
+			})
+		},false);
+		
+		//监听页面显示
+		cartWebview.addEventListener('show',function(){
+			//判断用户是否已经登录,已经登录就需要去获取购物车列表
+			if (localStorage.getItem('user')) {
+				needlogin.style.display = 'none';
+				wrapper.style.display = 'block';
+				if(cartSupplierItem.length <= 0) {
+					//去获取数据
+					initCartData();
+				}
+			}else {
+				//如果退出登录或者没有登录成功这个div将被显示出来。
+				needlogin.style.display = 'block';
+				wrapper.style.display = 'none';
+			}
+		},false);
+		
+		//监听登录成功
+		window.addEventListener('loginSuccess',function(){
+			needlogin.style.display = 'none';
+			wrapper.style.display = 'block';
+			initCartData();
+		},false);
+		
+		//监听退出登录
+		window.addEventListener('logout',function(){
+			needlogin.style.display = 'block';
+			var loginDiv =  document.querySelector('.wrapper');
+			loginDiv.innerHTML = '';
+			loginDiv.style.display = 'none'
+			cartSupplierItem = [];
+		},false)
+		
+		
+		
+	});
+	
+	function initCartData(){
+		
+	}
+	$("#nav_bar li").on("click", function () {
+        var l = this.offsetLeft;
+        $("#now_flag").css({
+            "transform": "translateX(" + l + "px)",
+            "-webkit-transform": "translateX(" + l + "px)",
+            "-moz-transform": "translateX(" + l + "px)",
+            "-o-transform": "translateX(" + l + "px)",
+        });
+        $(this).addClass("select_nav").siblings().removeClass("select_nav");
+    });
+</script>
+</body>
+</html>

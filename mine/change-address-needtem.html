@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title>E3父子模版</title>
+<link rel="stylesheet" type="text/css" href="../css/mui.min.css" />
+<link rel="stylesheet" type="text/css" href="../css/own.css" />
+<link rel="stylesheet" type="text/css" href="../css/iconfont.css" />
+
+<style type="text/css">
+
+h5{color:black}
+.name{float:left;}
+.number{float:right;}
+.address{padding-top:2px;clear:both;}
+
+.mui-table-view{background: none;}
+#addressList > li{margin-bottom: 6px;background: #fff;}
+
+.mui-radio.mui-left label{padding-left: 30px;}
+.mui-checkbox input[type=checkbox], .mui-radio input[type=radio]{top: 2px;left: 0px!important;}
+.tool-wrapper{display: flex;border-top: 1px solid #c8c7cc;margin-top: 6px;padding-top: 5px;}
+.tool-wrapper .mui-input-row{flex: 1;}
+.tool-wrapper .btn-wrapper{padding-top: 5px;font-size: 0px;}
+.tool-wrapper .btn-wrapper a{padding: 8px 12px;margin-left: 6px;}
+
+</style>
+</head>
+
+<body>
+
+<div class="mui-content own-content-padding">
+	<ul id="addressList" class="mui-table-view">
+		<!--<li class="mui-table-view-cell">
+			<h5 class="name">colin</h5>
+			<h5 class="number">158xxxx7353</h5>
+			<p class="address mui-ellipsis-2">中国四川省成都市高新区大源村南华路双祥社区25号院n栋n单元n楼n号电梯n号门n栋n单元n楼n号电梯n号门</p>
+			<div class="tool-wrapper">
+				<div class="mui-input-row mui-checkbox mui-left fz12">
+					<label>设为默认地址</label>
+					<input name="checkbox" value="Item 1" type="checkbox" checked>
+				</div>
+				<div class="btn-wrapper fz13">
+					<a class="btn c3 edit">编辑</a>
+					<a class="btn b1 c delete">删除</a>
+				</div>
+			</div>
+		</li>-->
+	</ul>
+</div>
+
+<script src="../js/mui.min.js" charset="UTF-8"></script>
+<script src="../js/mui.pullToRefresh.js"></script>
+<script src="../js/mui.pullToRefresh.material.js"></script>
+<script src="../js/own.js" charset="UTF-8"></script>
+<script src="../js/ajax.js" charset="UTF-8"></script>
+<script src="../js/Urls.js" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">
+
+	mui.init({
+		swipeBack: true
+	});
+
+	mui.plusReady(function() {
+		
+		page.init();
+		plus.webview.currentWebview().addEventListener("show", function(){
+			page.init();
+		}, false);
+		
+	});
+
+	
+var page = {
+	pullToRefresh: null,
+	init: function(){
+		this.getAddress();
+		this.initEvent();
+	},
+	initEvent: function(){
+		// 设置下拉刷新
+		var _this = this;
+		mui(".mui-content").pullToRefresh({
+			down: {
+				callback: function(){
+					_this.pullToRefresh = this;
+					_this.getAddress(true);
+					/*setTimeout(function(){
+						_this.endPullDownToRefresh();
+					}, 2000);*/
+				}
+			}
+		});
+		window.addEventListener('navRightPress', function() {
+			_this.toAddAddress();
+		}, false);
+		
+		mui('.mui-table-view').on('tap', '.edit', function() {
+			console.log("============================================================" + new Date().getTime());
+			_this.toAddAddress({data: this.getAttribute("data-data")});
+		});
+		mui('.mui-table-view').on('tap', '.delete', function() {
+			_this.deleteAddress(this.getAttribute("data-id"));
+		});
+		mui('.mui-table-view').on('change', 'input', function() {
+			_this.setDefaultAddress(this.value);
+		});
+	},
+	getAddress: function(isRefresh){
+		var _this = this;
+		request.ajax({url: Urls.address, data: {appid: "APPID",member: localStorage.getItem("memberId")}}, function(data){
+			console.log(JSON.stringify(data));
+			if(isRefresh) _this.pullToRefresh.endPullDownToRefresh();
+			if(data.code == 1){
+				_this.addressHtml(data.data);
+			}
+		}, function(){
+			if(isRefresh) _this.pullToRefresh.endPullDownToRefresh();
+		}, true);
+	},
+	deleteAddress: function(id){
+		var _this = this;
+		request.ajax({url: Urls.delAddress, data: {appid: "APPID",member: localStorage.getItem("memberId"), recipient_id: id}}, function(data){
+			mui.toast(data.msg);
+			if(data.code == 1){
+				_this.getAddress();
+			}
+		}, null, true);
+	},
+	setDefaultAddress: function(id){
+		var _this = this;
+		request.ajax({url: Urls.setDefaultAddress, data: {appid: "APPID",member: localStorage.getItem("memberId"), recipient_id: id}}, function(data){
+			mui.toast(data.msg);
+			if(data.code == 1){
+				_this.getAddress();
+			}
+		}, null, true);
+	},
+	addressHtml: function(data){
+		if(data.length == 0){
+			document.getElementById("addressList").innerHTML = pageStatus.notResult;
+			return;
+		}
+		var html = "";
+		data.forEach(function(item, index){
+			html += "<li class='mui-table-view-cell'>"+
+					"	<h5 class='name'>"+item.recipients+"</h5>"+
+					"	<h5 class='number'>"+item.phone+"</h5>"+
+					"	<p class='address mui-ellipsis-2'>"+(item.country+item.province+item.city+item.area+item.address)+"</p>"+
+					"	<div class='tool-wrapper'>"+
+					"		<div class='mui-input-row mui-radio mui-left fz12'>"+
+					"			<label>设为默认地址</label>"+
+					"			<input name='checkbox' value='"+item.recipient_id+"' type='radio' "+(item.recipient_state == 1? "checked": "")+">"+
+					"		</div>"+
+					"		<div class='btn-wrapper fz13'>"+
+					"			<a class='btn c3 edit' data-data='"+JSON.stringify(item)+"'>编辑</a>"+
+					"			<a class='btn b1 c delete' data-id='"+item.recipient_id+"'>删除</a>"+
+					"		</div>"+
+					"	</div>"+
+					"</li>";
+		});
+		document.getElementById("addressList").innerHTML = html;
+	},
+	toAddAddress: function(ops){
+		pushWebView({
+			webType: 'newWebview_Second',
+			id: 'mine/address-new-needtem.html',
+			href: 'mine/address-new-needtem.html',
+			aniShow: getaniShow(),
+			title: "地址管理",
+			isBars: false,
+			barsIcon: 'mui-icon iconfont icon-iconfont53',
+			extendOptions: ops ? ops : {}
+		});
+	}
+}
+	
+</script>
+
+</body>
+
+</html>

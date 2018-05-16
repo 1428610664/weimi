@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title>E3不是父子模版，考虑其为模态视图</title>
+<link rel="stylesheet" type="text/css" href="../css/mui.min.css" />
+<link rel="stylesheet" type="text/css" href="../css/own.css" />
+<link rel="stylesheet" type="text/css" href="../css/iconfont.css" />
+<style type="text/css">
+
+.ipuWrapper{position: absolute;top: 0;left: 10px;right: 60px;}
+.ipuWrapper input{border: none;margin-top: 6px;margin-bottom: 0;padding: 5px 10px;height: 32px;font-size: 14px;}
+.search{line-height: 44px;padding: 0 8px;}
+
+
+.mui-content{position: fixed;top: 0;bottom: 0;left: 0;width: 100%;padding: 0 10px;overflow: auto;}
+.search-list .search-item{border-bottom: 1px solid #ddd;font-size: 14px;line-height: 40px;}
+.search-list .search-item:nth-child(1){border-top: 1px solid #ddd;}
+.clearCache{margin-top: 15px;display: inline-block;text-align: center;border: 1px solid #F52A3C;padding: 3px 16px;border-radius: 20px;font-size: 13px;}
+
+</style>
+</head>
+<body>
+
+	<header class="mui-bar mui-bar-nav b1">
+		<div class="mui-input-row ipuWrapper">
+			<input type="text" class="mui-input-clear" oninput="page.onInput()" id="ipu" placeholder="搜索">
+		</div>
+		<div class="fr c fz15 search" id="search">取消</div>
+	</header>
+
+	<div class="mui-content">
+		<div class="fz13 c3" style="padding: 12px 0;">搜索历史</div>
+		<div class="search-list" id="search-list">
+			<!--<div class="search-item">大大</div>-->
+		</div>
+		<div class="posct"><p class="clearCache c1" onclick="page.clearSearchCache()">清空搜索历史</p></div>
+	</div>
+
+<script src="../js/mui.min.js" charset="UTF-8"></script>
+<script src="../js/own.js" charset="UTF-8"></script>
+<script src="../js/Urls.js" charset="UTF-8"></script>
+<script src="../js/ajax.js" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">
+
+	mui.init({
+		swipeBack: true
+	});
+	mui.plusReady(function() {
+		page.init();
+	});
+	
+var page = {
+	init: function(){
+		this.initEvent();
+		page.setCacheList();
+	},
+	initEvent: function(){
+		document.addEventListener("keydown", function(e){
+			if(e.keyCode==13){
+				mui.toast("搜索");
+			}
+		});
+		
+		var searchBtm = document.getElementById("search");
+		searchBtm.addEventListener("tap", function(){
+			if(this.innerText == "取消"){
+				mui.back();
+			}else{
+				var v = document.getElementById("ipu").value.trim();
+				page.toListPage(v);
+				page.setSearchCache(v);
+			}
+		});
+		
+		mui('.search-list').on('tap', '.search-item', function() {
+			var v = this.innerText;
+			page.toListPage(v);
+		});
+	},
+	onInput: function(){
+		var ipuDom = document.getElementById("ipu"), searckTxt = document.getElementById("search");
+		if(ipuDom.value.trim() != '')searckTxt.innerHTML = '搜索';
+			else searckTxt.innerHTML = '取消';
+	},
+	toListPage: function(v){
+		pushWebView({
+			webType: 'newWebview_First',
+			id: 'category/category-detail-new-needtem.html',
+			href: 'category/category-detail-new-needtem.html',
+			aniShow: getaniShow(),
+			title: "商品",
+			isBars: false,
+			barsIcon: '',
+			extendOptions: {searchValue: v}
+		});
+	},
+	setCacheList: function(){
+		var searchCache = localStorage.getItem("searchCache");
+		searchCache = searchCache ? JSON.parse(searchCache) : [];
+		page.searchCacheHtml(searchCache);
+	},
+	setSearchCache: function(v){
+		var searchCache = localStorage.getItem("searchCache");
+		searchCache = searchCache ? JSON.parse(searchCache) : []; 
+		console.log("0000000000:" + searchCache)
+		if(searchCache.indexOf(v) == -1){
+			searchCache.push(v);
+			console.log(searchCache)
+			localStorage.setItem("searchCache", JSON.stringify(searchCache));
+		}
+	},
+	clearSearchCache: function(){
+		localStorage.removeItem("searchCache");
+		document.getElementById("search-list").innerHTML = '';
+	},
+	searchCacheHtml: function(data){
+		if(data.length == 0) {
+			
+			return;
+		}
+		var html = '';
+		for(var i = 0, ilen = data.length; i < ilen; i++){
+			html += "<div class='search-item'>"+data[i]+"</div>";
+		}
+		document.getElementById("search-list").innerHTML = html;
+	}
+}
+
+</script>
+</body>
+</html>

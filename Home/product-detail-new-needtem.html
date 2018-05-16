@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title>product-detail</title>
+<link href="../css/mui.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="http://at.alicdn.com/t/font_665678_e8qezk1qhdqdunmi.css" />
+<link rel="stylesheet" type="text/css" href="../css/own.css" />
+<style type="text/css">
+#detailcontent{padding-bottom: 46px;}
+.mui-table-view-cell:after{left:0px;}
+.mui-table-view .mui-table-view-cell{background-color:white;}
+.mui-slider-indicator .mui-active.mui-indicator{/*background-color:#41CEA9;*/}
+#headul:after{height:0px;}
+#headul .mui-table-view-cell{padding-bottom:0px;padding-top:0px;margin-top:0px;background-color:white;}
+#headul{padding: 6px 0 0;margin-bottom:8px;}
+#headul .mui-table-view-cell:after{height:0px;}
+.mui-table-cell .borderleft{height:40%;border-left:1px solid gray;margin-left:5px;}
+.mui-icon.iconfont{font-size:1em;color:#41CEA9;}
+#headul .mui-table-view-cell.setbg{background-color:#f3fcfb;padding: 6px 15px;}
+#headul .mui-table-view-cell.setbg div{font-size:0.7em;color:gray;}
+.mui-table-view-cell p.evaluateTitle{color:black;font-size:1em;}
+.mui-table-view{margin-bottom:10px;}
+span.evaluate{margin: 3px 5px 0 0;padding: 0px 3px;font-size: 12px;display: inline-block;color: #999;border:1px solid #ddd;border-radius: 4px;}
+.mui-table-view-cell .evaluaterHead img{background-color:darkgray;width:2.5em;max-width:2.5em;height:2.5em;border:1px solid gray;border-radius:50%;}
+.mui-table-view-cell .evaluaterHead span{font-size:0.9em;vertical-align:super;}
+.mui-table-view-cell .evaluteContent{font-size:0.7em;line-height:1.2em;}
+.mui-table-view-cell .evaluteMsg{font-size:0.5em;}
+.mui-table-view-cell.moreEvaluate{text-align:center;padding-top:8px;padding-bottom:8px;}
+.mui-table-view-cell.moreEvaluate a{color:darkgray;}
+.mui-table .mui-col-xs-4{font-size:0.68em;color:darkgray;}
+.mui-table .mui-col-xs-6{line-height:1.1em;font-size:0.8em;}
+.mui-table .mui-col-xs-6 .stroemsg{font-size:0.5em;color:darkgray;}
+.mui-table .mui-col-xs-6 .lingBtn{font-size:1em;}
+.mui-table-view.mui-grid-view .mui-table-view-cell .mui-media-body{margin-top:2px;margin-bottom:5px;height:auto;}
+.mui-table-view.mui-grid-view .mui-table-view-cell .mui-media-body p.mui-ellipsis-2{white-space:pre;line-height: 24px;}
+.mui-table-view.mui-grid-view .mui-table-view-cell .mui-media-body p.price{font-size:0.8em;color:#41CEA9;}
+
+#detailsPage{padding: 6px 8px;background: #fff;position: relative;}
+#detailsPage:before{position:absolute;right:0;top:0;left:0;height:1px;content:'';-webkit-transform:scaleY(.5);transform:scaleY(.5);background-color:#c8c7cc;}
+#detailsPage img{max-width: 100%;display: block;}
+
+#footer{width: 100%;height: 46px;position: fixed;bottom: 0;left: 0;z-index: 40;display: flex;border-top: 1px solid #ddd;}
+.lef-wrapper{-webkit-flex: 0 0 80px;-ms-flex: 0 0 80px;flex:0 0 80px;}
+.rig-wrapper{-webkit-flex: 1;-ms-flex: 1;flex: 1;border-left: 1px solid #ddd;}
+
+#shareBtn{width: 90%; padding: 7px 0px;}
+
+
+</style>
+</head>
+
+<body>
+	
+	<div class="mui-content">
+		<div id="detailcontent" class="mui-content  own-content-padding">
+			<div id="productSlider" class="mui-slider"></div>
+			<div id="header"></div>
+			<div id="evaluate"></div>
+			<div id="detailsPage"></div>
+		</div>
+		
+		<div id="footer" class="b">
+			<div class="lef-wrapper posct" id="contact"><i class="iconfont icon-weibiaoti-_huabanfuben fz24 c2"></i></div>
+			<div class="rig-wrapper">
+				<div class="mui-button-row">
+					<button id="shareBtn" type="button" class="mui-btn own-btn-green">一键分享</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+<script type="text/javascript" src="../js/mui.min.js" ></script>
+<script type="text/javascript" src="../js/own.js" ></script>
+<script type="text/javascript" src="../js/ajax.js" ></script>
+<script type="text/javascript" src="../js/Urls.js" ></script>
+<script type="text/javascript" charset="UTF-8">
+	mui.init({
+		swipeBack: false
+	});
+	var currentWebview; //当前子页面
+	var paredntWebview; //父页面
+	mui.plusReady(function() {
+		currentWebview = plus.webview.currentWebview();
+		paredntWebview = currentWebview.parent();
+		//如果要获取当前页面的数据
+		mui.fire(paredntWebview,'getExtendOptions',{});
+		//监听返回获取到options数据
+		window.addEventListener('postExtendOptions',function(e){
+			console.log("详情页数据："+JSON.stringify(e.detail.extendOptions));
+			page.data = e.detail.extendOptions;
+			page.init();
+		},false);
+	});
+	
+var page = {
+	data: null,
+	init: function(){
+		this.getDetails();
+		this.initEvent();
+		
+		this.banner();
+		this.headerHtml();
+		this.evaluate();
+	},
+	initEvent: function(){
+		document.getElementById("shareBtn").addEventListener("tap", function(){
+			plus.nativeUI.actionSheet( {title:"图文推广",cancel:"取消",buttons:[{title:"链接分享"},{title:"二维码分享"}]}, function(e){
+				mui.toast(e.index)
+			});
+		}, false);
+		
+		document.getElementById("contact").addEventListener("tap", function(){
+			mui.confirm('Tel：13512345678', '在线时间 8:30 - 22:00', []);
+		}, false);
+	},
+	getDetails: function(id){
+		request.ajax({url: Urls.goodsContent, data: {appid: 'APPID', goods_id: this.data.goodsId}}, function(data){
+			console.log(JSON.stringify(data))
+			if(data.code == 1){
+				document.getElementById("detailsPage").innerHTML = data.desc;
+			}
+		}, null, true);
+	},
+	banner: function(){
+		if(!this.data) return;
+		var data = [];
+		for(var i = 1; i < 8; i++){
+			if(this.data["img" + i]) data.push(this.data["img" + i]);
+		}
+		var sliderItem = "", indicator = "";
+		for(var i = 0, ilen = data.length; i < ilen; i++){
+			sliderItem += "<div class='mui-slider-item'>"+
+						"	<a href='#'>"+
+						"		<img src='"+locationPath+data[i]+"'>"+
+						"	</a>"+
+						"</div>";
+			indicator += "<div class='mui-indicator "+(i == 0 ? 'mui-active': '')+"'></div>";	
+		}
+		
+		var html = "<div class='mui-slider-group'>"+sliderItem+"</div>"+
+					"<div class='mui-slider-indicator'>"+indicator+"</div>";
+		
+		document.getElementById('productSlider').innerHTML = html;
+		mui('.mui-slider').slider({interval: 0});
+	},
+	headerHtml: function(){
+		var _this = this;
+		var html = "<ul id='headul' class='mui-table-view'>"+
+					"			<li class='mui-table-view-cell'>"+
+					"				<div class='mui-table'>"+
+					"					<div class='mui-table-cell mui-col-xs-12'>"+
+					"						<h5 class='fz16 own-black-color mui-ellipsis-2'>"+_this.data.goodsName+"</h5>"+
+					"						<h5 class='c3 fz12'>"+_this.data.describe+"</h5>"+
+					"						<h5 class='own-main-color fz18'>¥"+_this.data.price+" <span class='own-text-through c3 fz12'>¥"+_this.data.price+"</span></h5>"+
+					"					</div>"+
+					"				</div>"+
+					"			</li>"+
+					"			<li class='mui-table-view-cell'>"+
+					"				<div class='mui-table'>"+
+					"					<div class='mui-table-cell mui-col-xs-10'>"+
+					"						<h5 class='own-black-color'>顺丰快递</h5>"+
+					"					</div>"+
+					"					<div class='mui-table-cell mui-col-xs-2 mui-text-right'>"+
+					"						<h5 class='own-black-color'>深圳</h5>"+
+					"					</div>"+
+					"				</div>"+
+					"			</li>"+
+					"			<li class='mui-table-view-cell setbg'>"+
+					"				<div><span class='mui-icon iconfont icon-queren'></span><span> 商家保证</span></div>"+
+					"				<div><span class='mui-icon iconfont icon-queren'></span><span> 7天无理由退换货，退货邮费由买家承担</span></div>"+
+					"				<div><span class='mui-icon iconfont icon-queren'></span><span> 单笔订单满199元，送礼物一份</span><br></div>"+
+					"				<div><span class='mui-icon iconfont icon-queren'></span><span> 单笔订单满399元，免快递费(不包含地区：新疆)</span></div>"+
+					"			</li>"+
+					"		</ul>";
+		document.getElementById("header").innerHTML = html;
+	},
+	evaluate: function(){
+		var html = "<ul class='mui-table-view'>"+
+					"	<li class='mui-table-view-cell'>"+
+					"		<p class='evaluateTitle'>"+
+					"			宝贝评价"+
+					"		</p>"+
+					"		<div>"+
+					"			<span class='evaluate'>味道好闻（46）</span><span class='evaluate'>服务态度好（2）</span><span class='evaluate'>是正品（1）</span><span class='evaluate'>包装严实（6）</span><span class='evaluate'>快递不错（90）</span><span class='evaluate'>质量不错（20）</span>"+
+					"		</div>"+
+					"	</li>"+
+					"	<li class='mui-table-view-cell'>"+
+					"		<div class='evaluaterHead'>"+
+					"			<img src='../img/touxiang.jpg'> <span>王**小明</span>"+
+					"		</div>"+
+					"		<p class='evaluteContent'>"+
+					"			颜色和图片上的一样，没有色差，穿上以后也没有想象中的显黑，反而显白,颜色和图片上的一样，没有色差，穿上以后也没有想象中的显黑，反而显白"+
+					"		</p>"+
+					"		<p class='evaluteMsg'>"+
+					"			2015－01-02,颜色分类：风之恋男 Q版5ml 净含量：其他/other"+
+					"		</p>"+
+					"	</li>"+
+					"	<li class='mui-table-view-cell moreEvaluate'><a href='#' class=''>查看更多信息</a></li>"+
+					"</ul>";
+		document.getElementById("evaluate").innerHTML = html;
+	}
+}
+	
+</script>
+</body>
+
+</html>

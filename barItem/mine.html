@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title>Mine</title>
+<link href="../css/mui.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="http://at.alicdn.com/t/font_665678_e8qezk1qhdqdunmi.css" />
+<link rel="stylesheet" type="text/css" href="../css/own.css" />
+<style type="text/css">
+	
+.headImg{padding:8% 0px 13% 0px;background:url(../img/Personal.png);background-position:center center;background-size:100% auto;}
+.touxiang{text-align:center;}
+.touxiang div{width:4em;height:4em;padding:0px;border-radius:50%;border:2px solid white;color:gray;margin:0px auto;margin-bottom:5px;}
+.tools-bar{display:-webkit-box;display:-ms-flexbox;display:flex;}
+.tool-item{-webkit-flex:1;-ms-flex:1;flex:1;text-align:center;padding:10px;}
+
+</style>
+</head>
+
+<body>
+	<div class="mui-content">
+		<div class="headImg">
+			<div class="touxiang">
+				<div><img id="trueimg" src="../img/bg.jpeg" style="width: 100%; height: 100%; border-radius: 50%;" /></div>
+				<span id="userName" class="c">用户名</span>
+			</div>
+		</div>
+		
+		<div class="tools-bar b fz12 c3">
+			<div class="tool-item active"><span class="c1 fz18">0.00</span><br/>银票</div>
+			<div class="tool-item active"><span class="c2 fz18">0</span><br/>我的优惠券</div>
+		</div>
+	
+		<ul class="mui-table-view">
+			<li class="mui-table-view-cell">
+				<a class="mui-navigate-right" id="share" href="../mine/share-needtem.html">
+					<span class=" iconfont icon-fenxiang fz18"></span>分享记录
+				</a>
+			</li>
+			<li class="mui-table-view-cell">
+				<a id="changeaddress" class="mui-navigate-right" href="../mine/change-address-needtem.html">
+					<span class=" iconfont icon-address fz18"></span> 修改地址
+				</a>
+			</li>
+		</ul>
+		<ul class="mui-table-view" style="margin-top: 10px;">
+			<li class="mui-table-view-cell">
+				<a class="mui-navigate-right" href="../mine/become-partner-needtem.html">
+					<span class="iconfont icon-mima fz20"></span> 加盟微蜜
+				</a>
+			</li>
+			<li class="mui-table-view-cell">
+				<a class="mui-navigate-right" href="../mine/become-partner-needtem.html">
+					<span class="iconfont icon-mima fz20"></span> 我的团队
+				</a>
+			</li>
+			<li class="mui-table-view-cell">
+				<a class="mui-navigate-right" href="../mine/become-partner-needtem.html">
+					<span class="iconfont icon-mima fz20"></span> 我的佣金
+				</a>
+			</li>
+		</ul>
+		<ul class="mui-table-view" style="margin-top: 10px;">
+			<li class="mui-table-view-cell">
+				<a class="mui-navigate-right" href="../mine/about-us-needtem.html">
+					<span class="iconfont icon-mima fz20"></span> 关于我们
+				</a>
+			</li>
+			<li class="mui-table-view-cell">
+				<a class="mui-navigate-right" href="../mine/change-psd-needtem.html">
+					<span class=" iconfont icon-mima fz20"></span> 修改密码
+				</a>
+			</li>
+			<li class="mui-table-view-cell">
+				<a id="check-update" class="mui-navigate-right" href="javascript:void(0)">
+					<span class="iconfont icon-mima fz20"></span> 检查更新
+				</a>
+			</li>
+		</ul>
+		<ul id="logoutBtn" class="mui-table-view" style="margin-top: 10px;margin-bottom: 20px;">
+			<li class="mui-table-view-cell" style="text-align: center;">
+				<span style="color: indianred;">退出登录</span>
+			</li>
+		</ul>
+	</div>
+<script type="text/javascript" src="../js/mui.min.js"></script>
+<script type="text/javascript" src="../js/own.js"></script>
+<script type="text/javascript" charset="UTF-8">
+	mui.init({
+		swipeBack: false
+	});
+	mui.plusReady(function() {
+		page.init();
+	});
+	
+var page = {
+	userData: null,
+	init: function(){
+		this.userData = JSON.parse(localStorage.getItem("user"));
+		this.initEvent();
+		this.initData();
+	},
+	initData: function(){
+		document.getElementById("userName").innerText = this.userData.member_name
+	},
+	initEvent: function(){
+		
+		mui('.mui-table-view').on('tap', 'a', function() {
+			var isBars = false;
+			var barsIcon = '';
+			if (this.id == 'changeaddress') {
+				isBars = true;
+				barsIcon = 'iconfont icon-plus-add';
+			}else if(this.id == 'check-update'){
+				mui.toast('检查更新');
+				return;
+			}else if(this.id == 'share'){
+				isBars = true;
+			}
+			pushWebView({
+				webType: 'newWebview_First',
+				id: this.getAttribute('href'),
+				href: this.href,
+				aniShow: getaniShow(),
+				title: this.innerText,
+				isBars: isBars,
+				barsIcon: barsIcon,
+				extendOptions: {}
+			})
+		});
+		
+		document.getElementById('logoutBtn').addEventListener('tap', function() {
+			mui.confirm('确认要退出登录吗？', '提示', ['否', '是'], function(e) {
+				if (e.index == 1) {
+					localStorage.removeItem('user');
+					plus.webview.all().forEach(function(item, index){
+						if(!(item.id.indexOf("template") != -1 || item.id.indexOf("login") != -1 || item.id.indexOf("HBuilder") != -1)){
+							item.close();
+						}
+					});
+				}
+			});
+		}, false);
+	}
+}
+	
+</script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title>E3</title>
+<link rel="stylesheet" type="text/css" href="../css/mui.min.css"/>
+<link rel="stylesheet" type="text/css" href="../css/own.css"/>
+<link rel="stylesheet" type="text/css" href="../css/iconfont.css"/>
+<link rel="stylesheet" type="text/css" href="../css/mui.picker.min.css"/>
+<style type="text/css">
+input, textarea{font-size: 15px;}
+.mui-input-row label {width: 100%;}
+.mui-input-group .mui-input-row{height: auto;}
+.mui-input-row{padding: 5px 0;}
+.mui-checkbox input[type=checkbox], .mui-radio input[type=radio]{top: 9px;}
+</style>
+</head>
+<body>
+	
+<div class="mui-content" >
+	<div class="mui-card" style="margin-top: 10px;">
+	<form class="mui-input-group" id="formwrapper">
+		<div class="mui-input-row">
+			<input type="text" class="mui-input-clear" name="recipients" placeholder="联系人" />
+		</div>
+		<div class="mui-input-row">
+			<input type="text" class="mui-input-clear" maxlength="11" name="phone" placeholder="手机号码" />
+		</div>
+		<div class="mui-input-row" id="addressPicker">
+			<input type="text" class="mui-input-clear" name="region" readonly="true" placeholder="所在地区" />
+		</div>
+		<div class="mui-input-row" style="height: 4em; padding-top: 2px;">
+			<textarea placeholder="详细地址，如街道、楼牌号等" name="address" ></textarea>
+		</div>
+		<div class="mui-input-row mui-checkbox">
+			<label class="fz15">设为默认地址</label>
+			<input name="recipientState" value="Item 3" type="checkbox" >
+		</div>
+	</form>
+	</div>
+	<div class="mui-button-row" style="margin: 10px 15px;">
+		<button id="save" type="button" onclick="page.save()" class="mui-btn own-btn-green" style="width: 100%;padding: 10px 0px;">保存</button>
+	</div>
+</div>
+
+<script src="../js/mui.min.js" charset="UTF-8"></script>
+<script src="../js/city.data-3.js" charset="UTF-8"></script>
+<script src="../js/mui.picker.min.js" charset="UTF-8"></script>
+<script src="../js/own.js" charset="UTF-8"></script>
+<script type="text/javascript" src="../js/ajax.js"></script>
+<script type="text/javascript" src="../js/Urls.js"></script>
+<script src="../js/utils.js" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">
+	mui.init({
+		swipeBack:true
+	});
+	
+	mui.plusReady(function(){
+		
+		page.init();
+		
+		mui.fire(plus.webview.currentWebview().parent(), 'getExtendOptions', {});
+		window.addEventListener('postExtendOptions', function(e) {
+			console.log(e.detail.extendOptions.data)
+			if(e.detail.extendOptions.data) page.initData(JSON.parse(e.detail.extendOptions.data));
+		}, false);
+		
+	});
+	
+var page = {
+	isEdit: false,	// 是否为编辑状态
+	recipientId: 0,	// 编辑id
+	init: function(){
+		this.initEvent();
+	},
+	initData: function(opt){
+		var formDom = document.getElementById("formwrapper");
+		if(JSON.stringify(opt) == '{}') return;
+		for(var k in opt){
+			if(formDom[k]) formDom[k].value = opt[k];
+		}
+		page.isEdit = true;
+		page.recipientId = opt.recipient_id;
+		formDom.region.value = opt.province +" "+ opt.city +" "+ opt.area;
+		formDom.region.setAttribute("regionId", opt.provinceId +" "+ opt.cityId +" "+ opt.areaId);
+		formDom.recipientState.checked = opt.recipient_state == 1? true : false;
+	},
+	initEvent: function(){
+		var addressPicker = document.getElementById('addressPicker');
+		var pickerlabel = addressPicker.children[0];
+
+		addressPicker.addEventListener('tap',function(){
+			var Picker = new mui.PopPicker({layer:3});
+			Picker.setData(cityData3);
+			Picker.show(function(items){
+				pickerlabel.setAttribute("regionId",  (items[0] || {}).value + " " + (items[1] || {}).value + " " + (items[2] || {}).value)
+				pickerlabel.value = (items[0] || {}).text + " " + (items[1] || {}).text + " " + (items[2] || {}).text;
+			});
+		},false);
+		
+		/*document.getElementById("save").addEventListener('tap',function(){
+			page.save();
+		});*/
+		
+	},
+	save: function(){
+		var formDom = document.getElementById("formwrapper");
+		
+		if(HzUtils.isEmpty(formDom.recipients.value)){
+			mui.toast("联系人不能为空");
+			return;			
+		}
+		if(HzUtils.isEmpty(formDom.phone.value)){
+			mui.toast("手机号码不能为空");
+			return;			
+		}
+		if(HzUtils.isPhone(formDom.phone.value)){
+			mui.toast("手机号码错误");
+			return;			
+		}
+		if(HzUtils.isEmpty(formDom.region.value)){
+			mui.toast("请选择所在地区");
+			return;			
+		}
+		if(HzUtils.isEmpty(formDom.address.value)){
+			mui.toast("详细地址不能为空");
+			return;			
+		}
+		var region = formDom.region.getAttribute("regionId").split(" ");
+		console.log("=========" +region);
+		var requestData = {appid: "APPID", member: localStorage.getItem("memberId"),name: formDom.recipients.value,tel: formDom.phone.value,province: region[0],city: region[1],area: region[2],address: formDom.address.value, isDefault: formDom.recipientState.checked ? 1 : 0};
+		if(page.isEdit){
+			requestData.consigneeId = page.recipientId;
+		}
+		console.log("============="+JSON.stringify(requestData));
+		request.ajax({url: page.isEdit ? Urls.updataAddress : Urls.addAddress, data: requestData}, function(data){
+			mui.toast(data.msg);
+			if(data.code == 1){
+				mui.back();
+				return;
+			}
+			
+		}, function(error){
+			
+		}, true);
+	}
+}
+	
+	
+</script>
+	
+</body>
+</html>

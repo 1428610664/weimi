@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title>成为合伙人</title>
+<link rel="stylesheet" type="text/css" href="../css/mui.min.css"/>
+<link rel="stylesheet" type="text/css" href="../css/own.css"/>
+<style type="text/css">
+input{font-size: 15px;}
+.mui-input-row1{padding: 5px 0;}
+.mui-input-row1 label {width: 20%;}
+.mui-input-row label~input {width: 80%;margin-top: 5px;}
+.mui-input-group .mui-input-row{height: auto;}
+
+.get_code{float:left;width:30%;color:#f94042;text-align:center;line-height:34px;border:1px solid #f94042;box-sizing:border-box;-webkit-box-sizing:border-box;background:#fff;height:100%;border-radius:5px;margin-left:1%;font-size:15px;}
+.phone_code{display:block!important;float:left!important;height:100%!important;width:66%!important;background:#fff;box-sizing:border-box!important;-webkit-box-sizing:border-box!important;border:none!important;font-size:15px!important;}
+
+</style>
+</head>
+<body>
+
+	<div class="mui-content own-content-padding">
+		<div class="mui-card" style="margin-top: 10px;">
+			<form class="mui-input-group" id="formDom">
+				<div class="mui-input-row mui-input-row1">
+					<!--<label><span class="mui-icon iconfont icon-zhanghao"></span></label>-->
+					<input id="member" type="text" class="mui-input-clear" maxlength="11" placeholder="手机号" />
+				</div>
+				<div class="mui-input-row" style="padding: 6px 0;">
+					<input id="vcode" class="phone_code " type="text"maxlength="6" placeholder="验证码" />
+					<div id="get_code" class="get_code">获取验证码</div>
+				</div>
+				<div class="mui-input-row mui-input-row1">
+					<!--<label><span class="mui-icon iconfont icon-mimaxiugai"></span></label>-->
+					<input type="password" id="password" class="mui-input-clear" placeholder="密码" />
+				</div>
+				<div class="mui-input-row mui-input-row1">
+					<!--<label><span class="mui-icon iconfont icon-queren"></span></label>-->
+					<input type="password" id="password2" class="mui-input-clear" placeholder="确认新密码" />
+				</div>
+			</form>
+		</div>
+		<div class="mui-button-row" style="margin: 10px 15px;">
+			<button type="button" id="submitBtn" class="mui-btn mui-btn-link own-btn-green mui-btn-block" style="padding: 5px 0px;">修改</button>
+		</div>
+	</div>
+	
+<script src="../js/mui.min.js" charset="UTF-8"></script>
+<script src="../js/own.js" charset="UTF-8"></script>
+<script src="../js/ajax.js" charset="UTF-8"></script>
+<script src="../js/Urls.js" charset="UTF-8"></script>
+<script src="../js/md5.js" charset="UTF-8"></script>
+<script src="../js/utils.js" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">
+	mui.init({
+		swipeBack:true
+	});
+	
+	mui.plusReady(function(){
+		page.init();
+	});
+	
+	
+var page = {
+	init: function(){
+		this.initEvent();
+	},
+	initEvent: function(){
+		var getCodeBtn = document.getElementById("get_code"), submitBtn = document.getElementById("submitBtn");
+		getCodeBtn.addEventListener("tap", page.getCode, false);
+		submitBtn.addEventListener("tap", page.submitData, false);
+	},
+	getCodeMark: false,
+	getCode: function(){
+		var _this = this;
+		var formDom = document.getElementById("formDom");
+		var member = formDom.member.value;
+		if(HzUtils.isEmpty(member)){
+			mui.toast("请输入手机号");
+			return;
+		}
+		if(HzUtils.isPhone(member)){
+			mui.toast("手机号错误");
+			return;
+		}
+		if(page.getCodeMark) return;
+		page.getCodeMark = true;
+		
+		_this.innerHTML = "发送中...";
+		request.ajax({url: Urls.getCode, data: {member: member, type: 1, appid: "APPID"}}, function(data){
+			mui.toast(data.msg);
+			if(data.code == 1){
+				page.countDown(_this);
+            }else{
+				page.getCodeMark = false;
+				_this.innerHTML = "获取验证码";
+            }
+		}, function(){
+			page.getCodeMark = false;
+			_this.innerHTML = "获取验证码";
+		});
+	},
+	submitData: function(){
+		var formDom = document.getElementById("formDom");
+		var member = formDom.member.value,
+			vcode = formDom.vcode.value,
+			password = formDom.password.value,
+			password1 = formDom.password2.value;
+		
+		var check = (!HzUtils.isEmpty(member) && !HzUtils.isEmpty(vcode) && !HzUtils.isEmpty(password) && !HzUtils.isEmpty(password1));
+		if(!check){
+			mui.toast("请填写完成上面信息!");
+			return;
+		}
+		
+		if(HzUtils.isPhone(member)){
+			mui.toast("手机号错误");
+			return;
+		}
+		
+		if(password != password1){
+			mui.toast("密码不一致");
+			return;
+		}
+		request.ajax({url: Urls.checkCode, data: {appid: "APPID",member: member,type: 1,vcode: vcode}}, function(data){
+			if(data.code!=1){
+			 	mui.toast(data.msg);
+			 	return;
+			}
+			mui.toast("验证成功，正在提交注册...");
+			var ticket = data.data.ticket_code;
+			var requestData = {member: member,change_password: hex_md5(password),ticket: ticket,appid: "APPID"};
+			console.log("-------requestData-------" + JSON.stringify(requestData));
+			request.ajax({url: Urls.forgetPass, data: requestData}, function(data){
+				console.log("===========" + JSON.stringify(data));
+			 	mui.toast(data.msg);
+                if(data.code==1){
+                    mui.back();
+                }
+			});
+		}, null);
+		
+	},
+	countDown: function(self){
+		var seconds = 60, setint;
+        setint = setInterval(function(){
+            seconds--
+            if(seconds<=0){
+            	page.getCodeMark = false;
+                self.innerHTML = "获取验证码";
+                seconds=60;
+                clearInterval(setint);
+                return false;
+            }
+            self.innerHTML = "已发送"+seconds+"s";
+        },1000);
+	}
+}
+	
+</script>
+	
+</body>
+</html>
