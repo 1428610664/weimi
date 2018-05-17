@@ -9,8 +9,9 @@
 <link rel="stylesheet" href="http://at.alicdn.com/t/font_665678_e8qezk1qhdqdunmi.css" />
 <link rel="stylesheet" type="text/css" href="../css/own.css" />
 <style type="text/css">
-	
-.headImg{padding:8% 0px 13% 0px;background:url(../img/Personal.png);background-position:center center;background-size:100% auto;}
+
+.mui-navigate-right{font-size: 15px;}
+.headImg{display: block;padding:8% 0px 13% 0px;background:url(../img/Personal.png);background-position:center center;background-size:100% auto;}
 .touxiang{text-align:center;}
 .touxiang div{width:4em;height:4em;padding:0px;border-radius:50%;border:2px solid white;color:gray;margin:0px auto;margin-bottom:5px;}
 .tools-bar{display:-webkit-box;display:-ms-flexbox;display:flex;}
@@ -21,12 +22,12 @@
 
 <body>
 	<div class="mui-content">
-		<div class="headImg">
+		<a class="headImg" id="headImg" href="../mine/personal-center-needtem.html">
 			<div class="touxiang">
-				<div><img id="trueimg" src="../img/bg.jpeg" style="width: 100%; height: 100%; border-radius: 50%;" /></div>
+				<div><img id="trueimg" src="../img/app-logo.png" style="width: 100%; height: 100%; border-radius: 50%;" /></div>
 				<span id="userName" class="c">用户名</span>
 			</div>
-		</div>
+		</a>
 		
 		<div class="tools-bar b fz12 c3">
 			<div class="tool-item active"><span class="c1 fz18">0.00</span><br/>银票</div>
@@ -45,14 +46,19 @@
 				</a>
 			</li>
 		</ul>
-		<ul class="mui-table-view" style="margin-top: 10px;">
+		<ul class="mui-table-view" style="margin: 10px 0 40px;">
 			<li class="mui-table-view-cell">
 				<a class="mui-navigate-right" href="../mine/become-partner-needtem.html">
 					<span class="iconfont icon-mima fz20"></span> 加盟微蜜
 				</a>
 			</li>
 			<li class="mui-table-view-cell">
-				<a class="mui-navigate-right" href="../mine/become-partner-needtem.html">
+				<a class="mui-navigate-right" href="../mine/apply-commodity-needtem.html">
+					<span class="iconfont icon-mima fz20"></span> 申请供货
+				</a>
+			</li>
+			<li class="mui-table-view-cell">
+				<a class="mui-navigate-right" href="../mine/apply-commodity-needtem.html">
 					<span class="iconfont icon-mima fz20"></span> 我的团队
 				</a>
 			</li>
@@ -61,8 +67,13 @@
 					<span class="iconfont icon-mima fz20"></span> 我的佣金
 				</a>
 			</li>
+			<li class="mui-table-view-cell">
+				<a class="mui-navigate-right" href="../mine/setting-needtem.html">
+					<span class="iconfont icon-mima fz20"></span> 设置
+				</a>
+			</li>
 		</ul>
-		<ul class="mui-table-view" style="margin-top: 10px;">
+		<!--<ul class="mui-table-view" style="margin-top: 10px;">
 			<li class="mui-table-view-cell">
 				<a class="mui-navigate-right" href="../mine/about-us-needtem.html">
 					<span class="iconfont icon-mima fz20"></span> 关于我们
@@ -74,6 +85,11 @@
 				</a>
 			</li>
 			<li class="mui-table-view-cell">
+				<a class="mui-navigate-right" href="../mine/feedback-needtem.html">
+					<span class="iconfont icon-mima fz20"></span> 帮助与反馈
+				</a>
+			</li>
+			<li class="mui-table-view-cell">
 				<a id="check-update" class="mui-navigate-right" href="javascript:void(0)">
 					<span class="iconfont icon-mima fz20"></span> 检查更新
 				</a>
@@ -81,13 +97,16 @@
 		</ul>
 		<ul id="logoutBtn" class="mui-table-view" style="margin-top: 10px;margin-bottom: 20px;">
 			<li class="mui-table-view-cell" style="text-align: center;">
-				<span style="color: indianred;">退出登录</span>
+				<span style="color: indianred;">退出登陆</span>
 			</li>
-		</ul>
+		</ul>-->
 	</div>
 <script type="text/javascript" src="../js/mui.min.js"></script>
 <script type="text/javascript" src="../js/own.js"></script>
-<script type="text/javascript" charset="UTF-8">
+<script type="text/javascript" src="../js/ajax.js"></script>
+<script type="text/javascript" src="../js/Urls.js"></script>
+<script type="text/javascript">
+
 	mui.init({
 		swipeBack: false
 	});
@@ -107,18 +126,16 @@ var page = {
 	},
 	initEvent: function(){
 		
-		mui('.mui-table-view').on('tap', 'a', function() {
+		mui('.mui-content').on('tap', 'a', function() {
 			var isBars = false;
 			var barsIcon = '';
 			if (this.id == 'changeaddress') {
 				isBars = true;
 				barsIcon = 'iconfont icon-plus-add';
-			}else if(this.id == 'check-update'){
-				mui.toast('检查更新');
-				return;
 			}else if(this.id == 'share'){
 				isBars = true;
 			}
+			
 			pushWebView({
 				webType: 'newWebview_First',
 				id: this.getAttribute('href'),
@@ -130,19 +147,6 @@ var page = {
 				extendOptions: {}
 			})
 		});
-		
-		document.getElementById('logoutBtn').addEventListener('tap', function() {
-			mui.confirm('确认要退出登录吗？', '提示', ['否', '是'], function(e) {
-				if (e.index == 1) {
-					localStorage.removeItem('user');
-					plus.webview.all().forEach(function(item, index){
-						if(!(item.id.indexOf("template") != -1 || item.id.indexOf("login") != -1 || item.id.indexOf("HBuilder") != -1)){
-							item.close();
-						}
-					});
-				}
-			});
-		}, false);
 	}
 }
 	

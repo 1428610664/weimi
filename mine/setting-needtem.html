@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title>设置</title>
+<link href="../css/mui.min.css" rel="stylesheet" />
+<link rel="stylesheet" type="text/css" href="../css/own.css" />
+<style type="text/css">
+
+.mui-navigate-right{font-size: 14px;}
+.mui-pull-right {font-style: normal;color: #999;margin-right: 18px;font-size: 15px;}
+
+</style>
+</head>
+
+<body>
+	<div class="mui-content">
+		
+		<div class="logo-wrapper posct">
+			<div style="padding: 30px 0;">
+				<img src="../img/app-logo.png" width="80" height="80" >
+				<p class="st">微密 <span id="version"></span></p>
+			</div>
+		</div>
+		
+		<ul class="mui-table-view">
+			<li class="mui-table-view-cell">
+				<a href="../mine/about-us-needtem.html" class="mui-navigate-right">关于我们 <i class="mui-pull-right"></i></a>
+			</li>
+			<li class="mui-table-view-cell">
+				<a href="#about" class="mui-navigate-right" id="clear-storage">清除缓存 <i class="mui-pull-right"></i></a>
+			</li>
+			<li class="mui-table-view-cell">
+				<a href="../mine/change-psd-needtem.html" class="mui-navigate-right">修改密码<i class="mui-pull-right"></i></a>
+			</li>
+			<li class="mui-table-view-cell">
+				<a href="../mine/feedback-needtem.html" class="mui-navigate-right">帮助与反馈<i class="mui-pull-right"></i></a>
+			</li>
+			<li class="mui-table-view-cell">
+				<a href="#about" class="mui-navigate-right" id="check-update">检查更新 <i class="mui-pull-right"></i></a>
+			</li>
+		</ul>
+		<ul id="logoutBtn" class="mui-table-view" style="margin-top: 10px;margin-bottom: 20px;">
+			<li class="mui-table-view-cell" style="text-align: center;">
+				<span style="color: indianred;">退出登陆</span>
+			</li>
+		</ul>
+	</div>
+	
+<script type="text/javascript" src="../js/mui.min.js"></script>
+<script type="text/javascript" src="../js/own.js"></script>
+<script type="text/javascript" src="../js/ajax.js"></script>
+<script type="text/javascript" src="../js/Urls.js"></script>
+<script type="text/javascript" src="../js/update.js"></script>
+<script type="text/javascript" charset="UTF-8">
+
+	mui.init({
+		swipeBack: false
+	});
+	mui.plusReady(function() {
+		page.init();
+	});
+	
+var page = {
+	userData: null,
+	init: function(){
+		this.initData();
+		this.initEvent();
+	},
+	initData: function(){
+		this.userData = JSON.parse(localStorage.getItem("user"));
+		var version = plus.runtime.version;
+		document.getElementById("version").innerHTML = plus.os.name == "iOS"?"1.0.0":version;
+	},
+	initEvent: function(){
+		mui('.mui-table-view').on('tap', 'a', function() {
+			if(this.id == 'check-update'){
+				updateApp.getUpdate(true);
+				return;
+			}else if(this.id == 'clear-storage'){
+				mui.toast("清除缓存成功");
+				return;
+			}
+			
+			pushWebView({
+				webType: 'newWebview_Second',
+				id: this.getAttribute('href'),
+				href: this.href,
+				aniShow: getaniShow(),
+				title: this.innerText,
+				isBars: false,
+				barsIcon: "",
+				extendOptions: {}
+			})
+		});
+		
+		document.getElementById('logoutBtn').addEventListener('tap', function() {
+			mui.confirm('确认要退出登陆吗？', '提示', ['否', '是'], function(e) {
+				if (e.index == 1) {
+					localStorage.removeItem('user');
+					plus.webview.getWebviewById("HBuilder").show();
+					mui.fire(plus.webview.getWebviewById("HBuilder"), 'closeView', {});
+				}
+			});
+		}, false);
+	}
+}
+	
+</script>
+</body>
+</html>

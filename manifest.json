@@ -3,7 +3,7 @@
     "id": "H505433E5",/*应用的标识，创建应用时自动生成，勿手动修改*/
     "name": "微密",/*应用名称，程序桌面图标名称*/
     "version": {
-        "name": "1.0",/*应用版本名称*/
+        "name": "1.0.0",/*应用版本名称*/
         "code": ""
     },
     "description": "",/*应用描述信息*/
@@ -241,7 +241,10 @@
 					"mine/become-partner-needtem.html",
 					"mine/share-needtem.html",
 					"mine/share.html",
-					"Home/product-detail-new-needtem.html"
+					"Home/product-detail-new-needtem.html",
+					"mine/apply-commodity-needtem.html",
+					"mine/personal-center-needtem.html",
+					"mine/setting-needtem.html"
 				],
 				"priority": 0
 			},
@@ -263,11 +266,19 @@
 			"barItem/mine.html": {
 				"resources": [],
 				"refer": [
-					"mine/change-address-needtem.html"
+					"mine/change-address-needtem.html",
+					"mine/personal-center-needtem.html"
 				],
 				"priority": 0
 			},
 			"Home/product-detail-needtem.html": {
+				"resources": [],
+				"refer": [
+					"mine/address-new-needtem.html"
+				],
+				"priority": 0
+			},
+			"Home/product-detail-new-needtem.html": {
 				"resources": [],
 				"refer": [
 					"mine/address-new-needtem.html"

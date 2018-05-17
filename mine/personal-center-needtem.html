@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title>个人中心</title>
+<link href="../css/mui.min.css" rel="stylesheet" />
+<link rel="stylesheet" type="text/css" href="../css/own.css" />
+<link rel="stylesheet" type="text/css" href="../css/mui.picker.min.css"/>
+<style type="text/css">
+	
+.mui-navigate-right{font-size: 14px;}
+.mui-pull-right {font-style: normal;color: #999;margin-right: 18px;font-size: 14px;}
+.head{height:40px;}
+#head{line-height:50px;}
+#head-img1{position:absolute;bottom:12px;right:40px;width:50px;height:50px;border-radius: 50%;}
+
+</style>
+</head>
+
+<body>
+	<div class="mui-content">
+		<ul class="mui-table-view">
+			<li class="mui-table-view-cell">
+				<a id="head" class="mui-navigate-right">头像
+					<span class="mui-pull-right head">
+						<img class="head-img mui-action-preview" id="head-img1" src="../img/app-logo.png"/>
+					</span>
+				</a>
+			</li>
+			<li class="mui-table-view-cell">
+				<a href="#about" class="mui-navigate-right" id="userName">昵称 <i class="mui-pull-right" id="member_name">用户名</i></a>
+			</li>
+			<li class="mui-table-view-cell">
+				<a href="#about" class="mui-navigate-right" id="sexWrapper">性别 <i class="mui-pull-right" id="sex">保密</i></a>
+			</li>
+			<li class="mui-table-view-cell">
+				<a href="#about" class="mui-navigate-right" id="address">地区 <i class="mui-pull-right">中国</i></a>
+			</li>
+			<!--<li class="mui-table-view-cell">
+				<a href="#about" class="mui-navigate-right">证件号码 <i class="mui-pull-right"></i></a>
+			</li>-->
+		</ul>
+	</div>
+<script type="text/javascript" src="../js/mui.min.js"></script>
+<script src="../js/city.data-2.js"></script>
+<script src="../js/mui.picker.min.js"></script>
+<script type="text/javascript" src="../js/own.js"></script>
+<script type="text/javascript" src="../js/ajax.js"></script>
+<script type="text/javascript" src="../js/Urls.js"></script>
+<script type="text/javascript" src="../js/hzMUI.js"></script>
+<script type="text/javascript">
+
+	mui.init({
+		swipeBack: false
+	});
+	mui.plusReady(function() {
+		page.init();
+	});
+	
+var page = {
+	userData: null,
+	init: function(){
+		this.initData();
+		this.initEvent();
+	},
+	initData: function(){
+		this.userData = JSON.parse(localStorage.getItem("user"));
+		console.log("---------" + JSON.stringify(this.userData));
+		
+		document.getElementById("member_name").innerText = this.userData.member_name;
+		document.getElementById("sex").innerText = this.userData.sex == 0 ? "保密" : this.userData.sex == 1 ? "男性" : "女性";
+		
+		mui('.mui-table-view').on('tap', 'a', function() {
+			var id = this.id;
+			
+			switch(id){
+				case "head":
+					page.changePic();
+					break;
+				case "userName":
+					plus.nativeUI.prompt("修改用户名", function(e){
+						console.log( ((e.index==0)?"OK: ":"Cancel")+e.value );
+					},"提示", "请输入...", ["修改","取消"]);
+					break;
+				case "sexWrapper":
+					plus.nativeUI.actionSheet({title:"修改性别",cancel:"取消",buttons:[{title: "保密"},{title: "男性"},{title: "女性"}]}, function(e){
+						mui.toast(e.index)
+					});
+					break;
+				case "address":
+					var Picker = new mui.PopPicker({layer:3});
+					Picker.setData(cityData3);
+					Picker.show(function(items){
+						mui.toast(JSON.stringify(items));
+					});
+					break;
+			}
+		});
+		/*
+		
+		plus.nativeUI.actionSheet( {title:"图文推广",cancel:"取消",buttons:[{title:"链接分享"},{title:"二维码分享"}]}, function(e){
+				mui.toast(e.index)
+			});
+		
+		*/
+	},
+	initEvent: function(){
+		
+	},
+	changePic: function(){
+		plus.nativeUI.actionSheet({title:"修改头像",cancel:"取消",buttons:[{title: "拍照"},{title: "从手机相册选择"}]}, function(e){
+			mui.toast(e.index);
+			switch (e.index) {
+				case 0:
+					break;
+				case 1:
+					page.galleryImg();
+					break;
+				case 2:
+					page.galleryImg1();
+					break;
+				default:
+					break
+			}
+		});
+	},
+	galleryImg: function(){
+		
+	},
+	galleryImg1: function(){
+		
+	}
+}
+	
+</script>
+</body>
+</html>

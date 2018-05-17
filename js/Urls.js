@@ -1,6 +1,8 @@
 
 var locationPath = "http://weixin.coreware.cn";
 var Urls = {
+	// 更新
+	update: locationPath + "/Public/static/update/update.json",
 	// 登录
 	login: locationPath + "/fxfront/member/login",
 	// 注册

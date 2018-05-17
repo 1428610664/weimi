@@ -42,7 +42,7 @@
 			</form>
 		</div>
 		<div class="mui-button-row" style="margin: 10px 15px;">
-			<button id="loginBtn" type="button" class="mui-btn own-btn-green" style="width: 100%;padding: 10px 0px;">登录</button>
+			<button id="loginBtn" type="button" class="mui-btn own-btn-green" style="width: 100%;padding: 10px 0px;">登陆</button>
 		</div>
 		<div class="mui-button-row clear fz14" style="padding-top: 0px;">
 			<button id="register" type="button" class="mui-btn fl mui-btn-link c1 own-font-size" style="padding-top: 0px; margin-right: 60px; ">快速注册</button>
@@ -57,6 +57,7 @@
 <script src="../js/md5.js" charset="UTF-8"></script>
 <script src="../js/Urls.js" charset="UTF-8"></script>
 <script src="../js/ajax.js" charset="UTF-8"></script>
+<script src="../js/update.js" charset="UTF-8"></script>
 <script type="text/javascript" charset="UTF-8">
 	mui.init({
 		swipeBack: true,
@@ -64,6 +65,16 @@
 			backbutton: true
 		}
 	});
+	
+	document.addEventListener("closeView", function(){
+		plus.webview.all().forEach(function(item, index){
+			if(!(item.id.indexOf("template") != -1 || item.id.indexOf("login") != -1 || item.id.indexOf("HBuilder") != -1)){
+				item.close();
+			}
+		});
+	});
+	
+	
 	var loginWebview;
 	mui.plusReady(function() {
 		plus.screen.lockOrientation("portrait-primary");
@@ -71,6 +82,7 @@
 		
 		page.init();
 		page.initTemplate();
+		updateApp.getUpdate();
 		
 		if(localStorage.getItem("user")){
 			var indexView = plus.webview.create("../index.html","index.html",{scrollIndicator:'none',scalable:false,popGesture:'none',render:"always"});
@@ -106,10 +118,8 @@ var page = {
                 }  
             }  
         };
-		// 登录
-		document.getElementById('loginBtn').addEventListener('tap', function() {
-			page.requestLogin();
-		}, false);
+		// 登陆
+		document.getElementById('loginBtn').addEventListener('tap', page.requestLogin, false);
 		// 注册
 		document.getElementById('register').addEventListener('tap', function() {
 			pushWebView({

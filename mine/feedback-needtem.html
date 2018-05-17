@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title>E3为父子模版可直接用index的父子模版</title>
+<link rel="stylesheet" type="text/css" href="../css/mui.min.css"/>
+<link rel="stylesheet" type="text/css" href="../css/own.css"/>
+<link rel="stylesheet" href="http://at.alicdn.com/t/font_665678_e8qezk1qhdqdunmi.css" />
+<style type="text/css">
+input, textarea{font-size: 15px;}
+ul{-webkit-margin-before: 0px!important;-webkit-margin-after: 0px!important;-webkit-padding-start: 0px!important;}
+.mui-input-row label {width: 30%;}
+.mui-input-row label~input {width: 70%;}
+.mui-input-group .mui-input-row{height: auto;}
+
+.addpic-wrapper{padding: 16px 10px 10px;margin: 10px 0;}
+.addpic-wrapper .pic-item{width: calc( (100vw - 38px) / 4 );height: calc( (100vw - 38px) / 4 );margin: 0 6px 6px 0;float: left;position: relative;}
+.addpic-wrapper .pic-item .delete{border-radius: 50%;position: absolute;top: -3px; right: -3px;width: 20px;line-height: 20px;text-align: center;}
+.addpic-wrapper .pic-item:nth-child(4n){margin-right: 0px;}
+.addpic-wrapper .add-pic{width: calc( (100vw - 38px) / 4 );height: calc( (100vw - 38px) / 4 );border: 1px dashed #ddd; color: #ddd;}
+
+</style>
+</head>
+<body>
+
+	<div class="mui-content own-content-padding">
+		<form id="formDom" class="mui-input-group">
+			<div class="mui-input-row" style="height: 160px; padding-top: 2px;">
+				<textarea placeholder="请输入反馈意见..." name="address" ></textarea>
+			</div>
+			<div class="mui-input-row">
+				<label>联系方式</label>
+				<input type="text" id="member" class="mui-input-clear" placeholder="QQ/微信、手机号(必填)" />
+			</div>
+		</form>
+		
+		<form class="addpic-wrapper mui-input-group">
+			<ul id="pic-wrapper" class="pic-wrapper clear">
+				<!--<li class="pic-item pic-item1"><img src="../img/1.jpg" width="100%" height="100%"/><span class="delete b1 iconfont icon-plus-add fz14 c"></li>-->
+				<li id="add-pic" class="pic-item posct add-pic"><span class="iconfont icon-plus-add fz48"></span></li>
+			</ul>
+		</form>
+		
+		<div class="mui-button-row" style="margin: 10px 15px;">
+			<button type="button" id="submitBtn" class="mui-btn mui-btn-link own-btn-green mui-btn-block" style="padding: 5px 0px;">提交反馈</button>
+		</div>
+	</div>
+	
+<script src="../js/mui.min.js" charset="UTF-8"></script>
+<script src="../js/jquery-1.11.1.min.js" charset="UTF-8"></script>
+<script src="../js/own.js" charset="UTF-8"></script>
+<script src="../js/ajax.js" charset="UTF-8"></script>
+<script src="../js/Urls.js" charset="UTF-8"></script>
+<script src="../js/utils.js" charset="UTF-8"></script>
+<script type="text/javascript" charset="UTF-8">
+
+	mui.init({
+		swipeBack:true
+	});
+	
+	mui.plusReady(function(){
+		var currentWebview = plus.webview.currentWebview();
+		
+		page.init();
+	});
+	
+var page = {
+	init: function(){
+		this.initEvent();
+	},
+	initEvent: function(){
+		
+		mui("#pic-wrapper").on("tap", ".delete", function(){
+			$(this).parent().remove();
+			$(".add-pic").show();
+		});
+		
+		document.getElementById("submitBtn").addEventListener("tap", this.submit, false);
+		document.getElementById("add-pic").addEventListener("tap", this.gallery, false);
+	},
+	submit: function(){
+		var formDom = document.getElementById("formDom");
+		mui.toast("提交反馈");
+		return;
+		request.ajax({url: Urls.changePassword, data: {appid: "APPID",member: member, password: oldPsw, change_password: change_password}}, function(data){
+			console.log(JSON.stringify(data));
+			mui.toast(data.msg);
+			if(data.code == 0) return;
+			mui.back();
+		}, null, true);
+	},
+	gallery: function(){
+		var len = $("#pic-wrapper .pic-item1").length;
+		page.galleryImgs(9-len, function(files){
+			for(var i = 0, ilen = files.length; i <ilen; i++){
+				$("#pic-wrapper").prepend('<li class="pic-item pic-item1"><img src="'+files[i]+'" width="100%" height="100%"/><span class="delete b1 iconfont icon-plus-add fz14 c"></li>');
+			}
+			if($("#pic-wrapper .pic-item1").length >= 9) $(".add-pic").hide();
+		});
+	},
+	galleryImgs : function(maxLength,callback){
+		plus.gallery.pick( function(e){
+			if(callback)callback(e.files);
+		},function(e){
+			
+		},{filter:"image",maximum:maxLength,system:false,multiple:true});
+	},
+}
+	
+</script>
+	
+</body>
+</html>

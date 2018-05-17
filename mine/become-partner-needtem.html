@@ -50,6 +50,20 @@ input{font-size: 15px;}
 					<label>代理商</label>
 					<input name="partner" value="2" type="radio" >
 				</div>
+				<h5 class="mui-content-padded">我的推荐人</h5>
+				<div id="referee-wrapper">
+					<div class="mui-input-row mui-radio mui-left" style="line-height: 48px;">
+						<label>有</label>
+						<input name="isReferee" value="1" type="radio" checked>
+					</div>
+					<div class="mui-input-row mui-radio mui-left" style="line-height: 48px;">
+						<label>无</label>
+						<input name="isReferee" value="0" type="radio" >
+					</div>
+					<div class="mui-input-row mui-input-row1 refereeNum" id="refereeNum-wrapper">
+						<input id="refereeNum" type="text" class="mui-input-clear" maxlength="11" placeholder="推荐人手机" />
+					</div>
+				</div
 			</form>
 		</div>
 		<div class="mui-button-row" style="margin: 10px 15px;">
@@ -85,6 +99,11 @@ var page = {
 		var getCodeBtn = document.getElementById("get_code"), submitBtn = document.getElementById("submitBtn");
 		getCodeBtn.addEventListener("tap", page.getCode, false);
 		submitBtn.addEventListener("tap", page.submitData, false);
+		
+		var formDom = document.getElementById("formDom");
+		 mui('body').on('change','#referee-wrapper .mui-radio',function(e){
+			document.getElementById("refereeNum-wrapper").style.display = formDom.isReferee.value == 1? "block" : "none";
+        });
 	},
 	checkPartner: function(){
 		request.ajax({url: Urls.isPartner, data: {appid: "APPID", memberId: localStorage.getItem("memberId")}}, function(data){
@@ -132,7 +151,10 @@ var page = {
 			vcode = formDom.vcode.value,
 			password = formDom.password.value,
 			password1 = formDom.password2.value,
-			partner = formDom.partner.value;
+			partner = formDom.partner.value,
+			isReferee = formDom.isReferee.value,
+			refereeNum = formDom.refereeNum.value;
+			
 		
 		var check = (!HzUtils.isEmpty(member) && !HzUtils.isEmpty(vcode) && !HzUtils.isEmpty(password) && !HzUtils.isEmpty(password1));
 		if(!check){
@@ -149,6 +171,17 @@ var page = {
 			mui.toast("密码不一致");
 			return;
 		}
+		if(isReferee == 1){
+			if(HzUtils.isEmpty(refereeNum)){
+				mui.toast("推荐人手机不能为空");
+				return;
+			}
+			if(HzUtils.isPhone(refereeNum)){
+				mui.toast("推荐人手机号错误");
+				return;
+			}
+		}
+
 		request.ajax({url: Urls.checkCode, data: {appid: "APPID",member: member,type: 0,vcode: vcode}}, function(data){
 			if(data.code!=1){
 			 	mui.toast(data.msg);
@@ -156,7 +189,9 @@ var page = {
 			}
 			mui.toast("验证成功，正在提交申请...");
 			var ticket = data.data.ticket_code;
-			var requestData = {phone: member,password: hex_md5(password),ticket: ticket,appId: "APPID",memberId: localStorage.getItem("memberId"),partner: partner};
+			var requestData = {phone: member,password: hex_md5(password),ticket: ticket,appId: "APPID",memberId: localStorage.getItem("memberId"),partner: partner, isReferee: isReferee};
+			if(isReferee == 1) requestData.refNum = refereeNum;
+			
 			console.log("-------requestData-------" + JSON.stringify(requestData));
 			request.ajax({url: Urls.insertOrupdate, data: requestData}, function(data){
 				console.log("===========" + JSON.stringify(data));
