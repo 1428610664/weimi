@@ -13,6 +13,16 @@ var Urls = {
 	changePassword: locationPath + "/fxfront/member/changepaypassword",
 	// 城市列表
 	getHotregions: "/fxfront/interface/gethotregions",
+	// 个人信息
+	memberCenter: locationPath + "/fxfront/member/membercenter",
+	// 修改个人昵称
+	modifyNickname: locationPath + "/fxfront/member/modifynickname",
+	// 修改头像
+	uploadMemberPic: locationPath + "/fxfront/member/uploadmemberpic",
+	// 修改个人性别
+	modifySex: locationPath + "/fxfront/member/modifysex",
+	// 修改地区
+	modifyAddress: locationPath + "/fxfront/member/modifydistrict",
 	// 首页
 	home: locationPath + "/fxfront/interface/homepage",
 	// 首页banner

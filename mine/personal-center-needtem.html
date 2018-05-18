@@ -14,7 +14,7 @@
 .mui-pull-right {font-style: normal;color: #999;margin-right: 18px;font-size: 14px;}
 .head{height:40px;}
 #head{line-height:50px;}
-#head-img1{position:absolute;bottom:12px;right:40px;width:50px;height:50px;border-radius: 50%;}
+#userPic{position:absolute;bottom:12px;right:40px;width:50px;height:50px;border-radius: 50%;}
 
 </style>
 </head>
@@ -25,7 +25,7 @@
 			<li class="mui-table-view-cell">
 				<a id="head" class="mui-navigate-right">头像
 					<span class="mui-pull-right head">
-						<img class="head-img mui-action-preview" id="head-img1" src="../img/app-logo.png"/>
+						<img class="head-img mui-action-preview" id="userPic" src="../img/app-logo.png"/>
 					</span>
 				</a>
 			</li>
@@ -36,7 +36,7 @@
 				<a href="#about" class="mui-navigate-right" id="sexWrapper">性别 <i class="mui-pull-right" id="sex">保密</i></a>
 			</li>
 			<li class="mui-table-view-cell">
-				<a href="#about" class="mui-navigate-right" id="address">地区 <i class="mui-pull-right">中国</i></a>
+				<a href="#about" class="mui-navigate-right" id="address">地区 <i class="mui-pull-right" id="district">中国</i></a>
 			</li>
 			<!--<li class="mui-table-view-cell">
 				<a href="#about" class="mui-navigate-right">证件号码 <i class="mui-pull-right"></i></a>
@@ -57,21 +57,29 @@
 	});
 	mui.plusReady(function() {
 		page.init();
+		// 更新我的页面数据
+		plus.webview.currentWebview().addEventListener("hide", function(){
+			mui.fire(plus.webview.getWebviewById("barItem/mine.html"), 'changeUserInfo', {});
+		}, false);
 	});
 	
 var page = {
-	userData: null,
+	userInfo: null,
 	init: function(){
 		this.initData();
 		this.initEvent();
 	},
 	initData: function(){
-		this.userData = JSON.parse(localStorage.getItem("user"));
-		console.log("---------" + JSON.stringify(this.userData));
+		this.userInfo = JSON.parse(localStorage.getItem("userInfo"));
+		console.log("---------" + JSON.stringify(this.userInfo));
 		
-		document.getElementById("member_name").innerText = this.userData.member_name;
-		document.getElementById("sex").innerText = this.userData.sex == 0 ? "保密" : this.userData.sex == 1 ? "男性" : "女性";
-		
+		document.getElementById("userPic").setAttribute("src", locationPath+this.userInfo.member_pic);
+		document.getElementById("member_name").innerText = this.userInfo.member_name;
+		document.getElementById("sex").innerText = this.userInfo.sex == 0 ? "保密" : this.userInfo.sex == 1 ? "男性" : "女性";
+		document.getElementById("district").innerText = this.userInfo.district_name;
+	},
+	initEvent: function(){
+		var _this = this;
 		mui('.mui-table-view').on('tap', 'a', function() {
 			var id = this.id;
 			
@@ -82,36 +90,63 @@ var page = {
 				case "userName":
 					plus.nativeUI.prompt("修改用户名", function(e){
 						console.log( ((e.index==0)?"OK: ":"Cancel")+e.value );
+						if(e.index==0 && e.value.trim() != ""){
+							_this.modifyNickname(e.value.trim());
+						}
 					},"提示", "请输入...", ["修改","取消"]);
 					break;
 				case "sexWrapper":
-					plus.nativeUI.actionSheet({title:"修改性别",cancel:"取消",buttons:[{title: "保密"},{title: "男性"},{title: "女性"}]}, function(e){
-						mui.toast(e.index)
+					plus.nativeUI.actionSheet({title:"修改性别",cancel:"取消",buttons:[{title: "男性"},{title: "女性"}]}, function(e){
+						if(e.index > 0) _this.modifySex(e.index);
 					});
 					break;
 				case "address":
 					var Picker = new mui.PopPicker({layer:3});
 					Picker.setData(cityData3);
 					Picker.show(function(items){
-						mui.toast(JSON.stringify(items));
+						console.log(items[2].value +"------------"+ items[0].text +" "+items[1].text +" "+items[2].text);
+						_this.modifyAddress(items[2].value, /*items[0].text +" "+items[1].text +" "+*/items[2].text);
 					});
 					break;
 			}
 		});
-		/*
-		
-		plus.nativeUI.actionSheet( {title:"图文推广",cancel:"取消",buttons:[{title:"链接分享"},{title:"二维码分享"}]}, function(e){
-				mui.toast(e.index)
-			});
-		
-		*/
 	},
-	initEvent: function(){
-		
+	modifySex: function(index){
+		request.ajax({url: Urls.modifySex, data: {appid: "APPID", member_id: localStorage.getItem("memberId"), sex: index}}, function(data){
+			console.log("modifySex==="+JSON.stringify(data));
+			mui.toast(data.msg);
+			if(data.code == 1){
+				page.userInfo.sex = index;
+				document.getElementById("sex").innerText = index == 0 ? "保密" : index == 1 ? "男性" : "女性";
+				localStorage.setItem("userInfo", JSON.stringify(page.userInfo));
+			}
+		}, null, true);
+	},
+	modifyNickname: function(name){
+		request.ajax({url: Urls.modifyNickname, data: {appid: "APPID", member_id: localStorage.getItem("memberId"), nickname: name}}, function(data){
+			console.log("modifyNickname==="+JSON.stringify(data));
+			mui.toast(data.msg);
+			if(data.code == 1){
+				page.userInfo.member_name = name;
+				document.getElementById("member_name").innerText = name;
+				localStorage.setItem("userInfo", JSON.stringify(page.userInfo));
+			}
+		}, null, true);
+	},
+	modifyAddress: function(district_id, address){
+		request.ajax({url: Urls.modifyAddress, data: {appid: "APPID", member_id: localStorage.getItem("memberId"), district_id: district_id}}, function(data){
+			console.log("modifyAddress==="+JSON.stringify(data));
+			mui.toast(data.msg);
+			if(data.code == 1){
+				document.getElementById("district").innerText = address;
+				/*page.userInfo.member_name = address;
+				document.getElementById("district").innerText = address;
+				localStorage.setItem("userInfo", JSON.stringify(page.userInfo));*/
+			}
+		}, null, true);
 	},
 	changePic: function(){
 		plus.nativeUI.actionSheet({title:"修改头像",cancel:"取消",buttons:[{title: "拍照"},{title: "从手机相册选择"}]}, function(e){
-			mui.toast(e.index);
 			switch (e.index) {
 				case 0:
 					break;
@@ -127,10 +162,42 @@ var page = {
 		});
 	},
 	galleryImg: function(){
-		
+		var _this = this;
+		hzMUI.openCamera(function(v,url){
+			_this.uploadPic(url);
+  		});
 	},
 	galleryImg1: function(){
-		
+		var _this = this;
+		plus.gallery.pick( function(e){
+			_this.uploadPic(e.files[0]);
+	    }, function (e){
+	    	console.log( "取消选择图片" );
+	    },{filter:"image",maximum:1,system:false,multiple:true});
+	},
+	uploadPic: function(file){
+		var _this = this;
+		plus.nativeUI.showWaiting();
+		plus.zip.compressImage({src: file, dst: file, overwrite: true, quality: 10}, function(e){
+    		hzMUI.uploadData(Urls.uploadMemberPic+"?appid=APPID&member_id=" + localStorage.getItem("memberId"), e.target,{key:"image"},function(s,t){
+    			console.log(s+"==============="+JSON.stringify(t));
+    			plus.nativeUI.closeWaiting();
+    			if(s == 200){
+    				var json = JSON.parse(t.responseText);
+    				mui.toast(json.msg);
+    				_this.userInfo.member_pic = json.data;
+					document.getElementById("userPic").setAttribute("src", locationPath+_this.userInfo.member_pic);
+					localStorage.setItem("userInfo", JSON.stringify(page.userInfo));
+    			}else{
+    				mui.toast("上传失败");
+    			}
+    		},function(jd){
+    			console.log("已上传进度："+jd);
+    		});
+		},function(){
+			plus.nativeUI.closeWaiting();
+			mui.toast("图片上传失败");
+		});
 	}
 }
 	

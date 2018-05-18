@@ -46,7 +46,7 @@
 		downloadWgt : function(url,cb1,cb2,cb3){
 			console.log("-----------"+url);
 			var _this = this;
-			var task = _this.task = plus.downloader.createDownload(url, {filename: "_downloads/update"}, function (download, status) {
+			var task = _this.task = plus.downloader.createDownload(url, {filename:"_doc/update/"}, function (download, status) {
 				if (status == 200) {
 					//console.log("------下载完成-----"+download.filename);
 					if(_this.mark)_this.recursion(cb1,cb2,cb3);
@@ -77,7 +77,7 @@
 			this.task.abort();
 		}
 	}
-	
+
 	w.updateApp = {
 		verisonCode: 1,	// 更新app时修改
 		getUpdate: function(mark){
@@ -102,14 +102,13 @@
 		},
 		download: function(url){
 			try{
-				plus.io.resolveLocalFileSystemURL('_downloads/', function(entry){
+				plus.io.resolveLocalFileSystemURL('_doc/', function(entry){
 					entry.getDirectory('update', {create:true}, function(dir){
 						dir.removeRecursively(function(){ /*成功*/}, function(e){ /*失败*/});
 					}, function(ex1){ });
 				}, function(ex2){ });
 			}catch(epx){}
-			
-			
+			//this.test(url);
 			plus.nativeUI.showWaiting("正在下载更新文件...", {back: "none"});
 			var _this = this;
 			var hzDown1 = new hzDown();
@@ -125,6 +124,34 @@
 			},function(progress){
 				console.log("-------------" + progress);
 			});
+		},
+		test: function(url){
+			var _this = this;
+			plus.nativeUI.showWaiting("正在下载更新文件...", {back: "none"});
+			var downloader = plus.downloader.createDownload( url, {filename:"_doc/update/"}, function(d,status){
+		        if ( status == 200 ) { 
+		        	console.log(d.filename);
+		        	_this.installWgt(d.filename);
+		        } else {
+		            plus.nativeUI.alert("下载更新文件失败！");
+		        }
+		        plus.nativeUI.closeWaiting();
+		    });
+		    downloader.addEventListener("statechanged", function(download, status){
+		    	switch (download.state) {
+					case 2:
+						console.log("已连接到服务器");
+						break;
+					case 3:
+						var percent = download.downloadedSize / download.totalSize * 100;
+						console.log(percent);
+						break;
+					case 4:
+						console.log("下载完成");
+						break;
+				}
+		    }, false);
+		    downloader.start();
 		},
 		installWgt: function(file){
 			plus.nativeUI.showWaiting("正在安装更新文件...", {back: "none"});

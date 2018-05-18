@@ -24,7 +24,7 @@
 	<div class="mui-content">
 		<a class="headImg" id="headImg" href="../mine/personal-center-needtem.html">
 			<div class="touxiang">
-				<div><img id="trueimg" src="../img/app-logo.png" style="width: 100%; height: 100%; border-radius: 50%;" /></div>
+				<div><img id="userPic" src="../img/app-logo.png" style="width: 100%; height: 100%; border-radius: 50%;" /></div>
 				<span id="userName" class="c">用户名</span>
 			</div>
 		</a>
@@ -112,28 +112,37 @@
 	});
 	mui.plusReady(function() {
 		page.init();
+		plus.webview.currentWebview().addEventListener("show", function(){
+			page.memberCenter();
+		}, false);
+	});
+	
+	document.addEventListener("changeUserInfo", function(){
+		page.memberCenter();
 	});
 	
 var page = {
-	userData: null,
+	userInfo: null,
 	init: function(){
-		this.userData = JSON.parse(localStorage.getItem("user"));
 		this.initEvent();
-		this.initData();
+		this.memberCenter();
 	},
 	initData: function(){
-		document.getElementById("userName").innerText = this.userData.member_name
+		document.getElementById("userPic").setAttribute("src", locationPath+this.userInfo.member_pic)
+		document.getElementById("userName").innerText = this.userInfo.member_name
 	},
 	initEvent: function(){
 		
 		mui('.mui-content').on('tap', 'a', function() {
-			var isBars = false;
+			var isBars = false, innerText = this.innerText;
 			var barsIcon = '';
 			if (this.id == 'changeaddress') {
 				isBars = true;
 				barsIcon = 'iconfont icon-plus-add';
 			}else if(this.id == 'share'){
 				isBars = true;
+			}else if(this.id == "headImg"){
+				innerText = "个人信息";
 			}
 			
 			pushWebView({
@@ -141,12 +150,23 @@ var page = {
 				id: this.getAttribute('href'),
 				href: this.href,
 				aniShow: getaniShow(),
-				title: this.innerText,
+				title: innerText,
 				isBars: isBars,
 				barsIcon: barsIcon,
 				extendOptions: {}
 			})
 		});
+	},
+	memberCenter: function(){
+		var _this = this;
+		request.ajax({url: Urls.memberCenter, data: {appid: "APPID", member: localStorage.getItem("memberId")}}, function(data){
+			console.log("memberCenter========"+JSON.stringify(data));
+			if(data.code == 1){
+				_this.userInfo = data.data;
+				localStorage.setItem("userInfo", JSON.stringify(data.data));
+				_this.initData();
+			}
+		}, null, true);
 	}
 }
 	
