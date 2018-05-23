@@ -112,8 +112,18 @@ var page = {
 		});
 		
 		mui("#productSlider").on('tap', '.mui-slider-item ', function(e) {
-			var data = JSON.parse(this.getAttribute("data-data"));
-			mui.toast(data.ad_name);
+			var data = JSON.parse(this.getAttribute("data-data")), goodsId = data.ad_link.split("=")[1];
+			console.log(this.getAttribute("data-data"));
+			pushWebView({
+				webType: 'newWebview_First',
+				id: 'Home/product-detail-new-needtem.html',
+				href: 'Home/product-detail-new-needtem.html',
+				aniShow: getaniShow(),
+				title: "商品详情",
+				isBars: false,
+				barsIcon: '',
+				extendOptions: {goodsId: goodsId, isSlider: true}
+			});
 		});
 		
 		mui('#recommend').on('tap', '.share', function(e) {

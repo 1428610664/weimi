@@ -131,7 +131,7 @@ var page = {
 	},
 	listHtml: function(data){
 		var listWrapper = document.getElementById("list-wrapper");
-		if(data.length == 0) {
+		if(!data || data.length == 0) {
 			listWrapper.innerHTML = pageStatus.notResult;
 			return;
 		}

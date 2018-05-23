@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
-<title>E3为父子模版可直接用index的父子模版</title>
+<title>帮助与反馈</title>
 <link rel="stylesheet" type="text/css" href="../css/mui.min.css"/>
 <link rel="stylesheet" type="text/css" href="../css/own.css"/>
 <link rel="stylesheet" href="http://at.alicdn.com/t/font_665678_e8qezk1qhdqdunmi.css" />
@@ -27,11 +27,11 @@ ul{-webkit-margin-before: 0px!important;-webkit-margin-after: 0px!important;-web
 	<div class="mui-content own-content-padding">
 		<form id="formDom" class="mui-input-group">
 			<div class="mui-input-row" style="height: 160px; padding-top: 2px;">
-				<textarea placeholder="请输入反馈意见..." name="address" ></textarea>
+				<textarea placeholder="请输入反馈意见..." name="remark" ></textarea>
 			</div>
 			<div class="mui-input-row">
 				<label>联系方式</label>
-				<input type="text" id="member" class="mui-input-clear" placeholder="QQ/微信、手机号(必填)" />
+				<input type="text" id="cellphone" class="mui-input-clear" placeholder="QQ/微信、手机号(必填)" />
 			</div>
 		</form>
 		
@@ -53,6 +53,7 @@ ul{-webkit-margin-before: 0px!important;-webkit-margin-after: 0px!important;-web
 <script src="../js/ajax.js" charset="UTF-8"></script>
 <script src="../js/Urls.js" charset="UTF-8"></script>
 <script src="../js/utils.js" charset="UTF-8"></script>
+<script type="text/javascript" src="../js/hzMUI.js"></script>
 <script type="text/javascript" charset="UTF-8">
 
 	mui.init({
@@ -61,16 +62,19 @@ ul{-webkit-margin-before: 0px!important;-webkit-margin-after: 0px!important;-web
 	
 	mui.plusReady(function(){
 		var currentWebview = plus.webview.currentWebview();
-		
 		page.init();
 	});
 	
 var page = {
 	init: function(){
 		this.initEvent();
+		this.initData();
+	},
+	initData: function(){
+		var phone = localStorage.getItem("phone");
+		if(phone) document.getElementById("cellphone").value = phone;
 	},
 	initEvent: function(){
-		
 		mui("#pic-wrapper").on("tap", ".delete", function(){
 			$(this).parent().remove();
 			$(".add-pic").show();
@@ -81,20 +85,44 @@ var page = {
 	},
 	submit: function(){
 		var formDom = document.getElementById("formDom");
-		mui.toast("提交反馈");
-		return;
-		request.ajax({url: Urls.changePassword, data: {appid: "APPID",member: member, password: oldPsw, change_password: change_password}}, function(data){
+			remark = formDom.remark.value,
+			cellphone = formDom.cellphone.value;
+			
+		var model = plus.device.model,		// 手机型号
+			osVersion = plus.os.version,	// 版本
+			vendor = plus.device.vendor;	// 设备的生产厂商
+		
+		if(HzUtils.isEmpty(remark)){
+			mui.toast("反馈意见不能为空");
+			return;
+		}
+		if(HzUtils.isEmpty(cellphone)){
+			mui.toast("联系方式不能为空");
+			return;
+		}
+		var picUrl = [];
+		$("#pic-wrapper img").each(function(i, v){
+			picUrl.push($(v).attr("data-data"));
+		});
+		remark = remark +"----设备的生产厂商:"+vendor+"----手机型号："+model+"---------版本:"+osVersion;
+		
+		var requestData = {appid: "APPID", memberid: localStorage.getItem("memberId"), remark: remark,cellphone: cellphone, picUrl: picUrl.join("|")};
+		console.log("requestData======" + JSON.stringify(requestData));
+		request.ajax({url: Urls.addFeedback, data: requestData}, function(data){
 			console.log(JSON.stringify(data));
 			mui.toast(data.msg);
-			if(data.code == 0) return;
-			mui.back();
+			if(data.code == 1) mui.back();
 		}, null, true);
 	},
 	gallery: function(){
 		var len = $("#pic-wrapper .pic-item1").length;
 		page.galleryImgs(9-len, function(files){
 			for(var i = 0, ilen = files.length; i <ilen; i++){
-				$("#pic-wrapper").prepend('<li class="pic-item pic-item1"><img src="'+files[i]+'" width="100%" height="100%"/><span class="delete b1 iconfont icon-plus-add fz14 c"></li>');
+				page.uploadPic(files[i], function(data){
+					if(data.code == 1){
+						$("#pic-wrapper").prepend('<li class="pic-item pic-item1"><img data-data="'+data.data+'" src="'+locationPath+data.data+'" width="100%" height="100%"/><span class="delete b1 iconfont icon-plus-add fz14 c"></li>');
+					}
+				});
 			}
 			if($("#pic-wrapper .pic-item1").length >= 9) $(".add-pic").hide();
 		});
@@ -106,6 +134,28 @@ var page = {
 			
 		},{filter:"image",maximum:maxLength,system:false,multiple:true});
 	},
+	uploadPic: function(file, callback){
+		var _this = this;
+		plus.nativeUI.showWaiting();
+		plus.zip.compressImage({src: file, dst: file, overwrite: true, quality: 10}, function(e){
+    		hzMUI.uploadData(Urls.uploadPic+"?appid=APPID", e.target,{key:"image"},function(s,t){
+    			console.log(s+"======size="+e.size+"========"+JSON.stringify(t));
+    			plus.nativeUI.closeWaiting();
+    			if(s == 200){
+    				var json = JSON.parse(t.responseText);
+    				if(callback)callback(json);
+    				console.log("t.responseText=======" + t.responseText);
+    			}else{
+    				mui.toast("上传失败");
+    			}
+    		},function(jd){
+    			console.log("已上传进度："+jd);
+    		});
+		},function(){
+			plus.nativeUI.closeWaiting();
+			mui.toast("图片上传失败");
+		});
+	}
 }
 	
 </script>

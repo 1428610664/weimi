@@ -33,6 +33,10 @@ var Urls = {
 	getCategoryByChildFilter: locationPath + "/fxfront/interface/getcategorybychildfilter",
 	// 分类查询商品
 	getGoodsByCategoryDistrictBrand: locationPath + "/fxfront/interface/getGoodsByCategoryDistrictBrand",
+	// 查询商品信息
+	goodsDetailByApp: locationPath + "/fxfront/interface/goodsdetailbyapp",
+	// 商品评价列表
+	goodsComment: locationPath + "/fxfront/interface/goodscomment",
 	// 收货地址
 	address: locationPath + "/fxfront/order/address",
 	// 更新地址
@@ -57,4 +61,10 @@ var Urls = {
 	deleteOrder: locationPath + "/fxfront/shoporder/deleteorder",
 	// 商品详情页详情内容
 	goodsContent: locationPath + "/fxfront/interface/goodscontent",
+	// 提交商品审核
+	addGoodsApply: locationPath + "/fxfront/goodsApply/addGoodsApply",
+	// 反馈
+	addFeedback: locationPath + "/fxfront/appUploadPic/addFeedback",
+	// 上传图片
+	uploadPic: locationPath + "/fxfront/appUploadPic/uploadPic",
 }

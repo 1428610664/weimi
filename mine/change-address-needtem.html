@@ -139,7 +139,7 @@ var page = {
 		}, null, true);
 	},
 	addressHtml: function(data){
-		if(data.length == 0){
+		if(!data || data.length == 0){
 			document.getElementById("addressList").innerHTML = pageStatus.notResult;
 			return;
 		}
@@ -151,7 +151,7 @@ var page = {
 					"	<p class='address mui-ellipsis-2'>"+(item.country+item.province+item.city+item.area+item.address)+"</p>"+
 					"	<div class='tool-wrapper'>"+
 					"		<div class='mui-input-row mui-radio mui-left fz12'>"+
-					"			<label>设为默认地址</label>"+
+					"			<label>"+(item.recipient_state == 1? "默认地址": "设为默认地址")+"</label>"+
 					"			<input name='checkbox' value='"+item.recipient_id+"' type='radio' "+(item.recipient_state == 1? "checked": "")+">"+
 					"		</div>"+
 					"		<div class='btn-wrapper fz13'>"+

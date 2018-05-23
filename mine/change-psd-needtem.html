@@ -61,6 +61,11 @@
 var page = {
 	init: function(){
 		this.initEvent();
+		this.initData();
+	},
+	initData: function(){
+		var phone = localStorage.getItem("phone");
+		if(phone) document.getElementById("member").value = phone;
 	},
 	initEvent: function(){
 		document.getElementById("submitBtn").addEventListener("tap", this.submit, false);

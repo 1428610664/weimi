@@ -36,7 +36,7 @@
 				<a href="../mine/change-psd-needtem.html" class="mui-navigate-right">修改密码<i class="mui-pull-right"></i></a>
 			</li>
 			<li class="mui-table-view-cell">
-				<a href="../mine/feedback-needtem.html" class="mui-navigate-right">帮助与反馈<i class="mui-pull-right"></i></a>
+				<a href="../mine/feedback-new-needtem.html" class="mui-navigate-right">帮助与反馈<i class="mui-pull-right"></i></a>
 			</li>
 			<li class="mui-table-view-cell">
 				<a href="#about" class="mui-navigate-right" id="check-update">检查更新 <i class="mui-pull-right"></i></a>
@@ -44,7 +44,7 @@
 		</ul>
 		<ul id="logoutBtn" class="mui-table-view" style="margin-top: 10px;margin-bottom: 20px;">
 			<li class="mui-table-view-cell" style="text-align: center;">
-				<span style="color: indianred;">退出登陆</span>
+				<span style="color: indianred;">退出登录</span>
 			</li>
 		</ul>
 	</div>
@@ -97,11 +97,11 @@ var page = {
 		});
 		
 		document.getElementById('logoutBtn').addEventListener('tap', function() {
-			mui.confirm('确认要退出登陆吗？', '提示', ['否', '是'], function(e) {
+			mui.confirm('确认要退出登录吗？', '提示', ['否', '是'], function(e) {
 				if (e.index == 1) {
 					localStorage.removeItem('user');
-					plus.webview.getWebviewById("HBuilder").show();
-					mui.fire(plus.webview.getWebviewById("HBuilder"), 'closeView', {});
+					plus.webview.getLaunchWebview().show();
+					mui.fire(plus.webview.getWebviewById(plus.webview.getLaunchWebview().id), 'closeView', {});
 				}
 			});
 		}, false);

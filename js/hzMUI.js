@@ -105,7 +105,7 @@ var hzMUI = {
 	*/ 
 	getLocalhost : function(callback){
 		//获取地理位置  
-		var longitude,latitude;
+		/*var longitude,latitude;
 	    navigator.geolocation.getCurrentPosition(function(position){  
 	        var coords = position.coords;  
 	        //获取精度  
@@ -123,7 +123,7 @@ var hzMUI = {
 	            3: '获取信息超时'  
 	        };  
 	        plus.nativeUI.toast(errorTypes[error.code]);
-	    });  
+	    });  */
 	    
 	},
 	/*

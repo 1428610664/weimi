@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
-<title>E3为父子模版可直接用index的父子模版</title>
+<title>申请供货</title>
 <link rel="stylesheet" type="text/css" href="../css/mui.min.css"/>
 <link rel="stylesheet" type="text/css" href="../css/own.css"/>
 <link rel="stylesheet" href="http://at.alicdn.com/t/font_665678_e8qezk1qhdqdunmi.css" />
@@ -28,34 +28,34 @@ ul{-webkit-margin-before: 0px!important;-webkit-margin-after: 0px!important;-web
 		<div class="mui-card" style="margin-top: 10px;">
 			<form id="formDom" class="mui-input-group">
 				<div class="mui-input-row mui-input-row1">
-					<input type="text" id="member" class="mui-input-clear" placeholder="产品名称" />
+					<input type="text" name="goodsName" class="mui-input-clear" placeholder="产品名称" />
 				</div>
 				<div class="mui-input-row mui-input-row1">
-					<input type="text" id="member" class="mui-input-clear" placeholder="生成厂家" />
+					<input type="text" name="factory" class="mui-input-clear" placeholder="生成厂家" />
 				</div>
 				<div class="mui-input-row mui-input-row1">
-					<input type="text" id="member" class="mui-input-clear" placeholder="联系人名称" />
+					<input type="text" name="contactName" class="mui-input-clear" placeholder="联系人名称" />
 				</div>
 				<div class="mui-input-row mui-input-row1">
-					<input type="text" id="member" class="mui-input-clear" placeholder="联系人电话" />
+					<input type="text" name="contactNumber" maxlength="11" class="mui-input-clear" placeholder="联系人电话" />
 				</div>
 				<div class="mui-input-row mui-input-row1">
-					<input type="text" id="member" class="mui-input-clear" placeholder="市场价" />
+					<input type="text" name="marketPrice" class="mui-input-clear" placeholder="市场价" />
 				</div>
 				<div class="mui-input-row mui-input-row1">
-					<input type="text" id="member" class="mui-input-clear" placeholder="供货价" />
+					<input type="text" name="supplyPrice" class="mui-input-clear" placeholder="供货价" />
 				</div>
 				<h5 class="mui-content-padded">是否包邮</h5>
 				<div class="mui-input-row mui-radio mui-left" style="line-height: 48px;">
 					<label>包邮</label>
-					<input name="partner" value="1" type="radio" checked style="top: 8px;">
+					<input name="ispostage" value="1" type="radio" checked style="top: 8px;">
 				</div>
 				<div class="mui-input-row mui-radio mui-left" style="line-height: 48px;">
 					<label>不包邮</label>
-					<input name="partner" value="2" type="radio" style="top: 8px;" >
+					<input name="ispostage" value="0" type="radio" style="top: 8px;" >
 				</div>
 				<div class="mui-input-row" style="height: 160px; padding-top: 2px;">
-					<textarea placeholder="卖点描述..." name="address" ></textarea>
+					<textarea name="goodsDesc" placeholder="卖点描述..." ></textarea>
 				</div>
 			</form>
 		</div>
@@ -105,16 +105,55 @@ var page = {
 		//document.getElementById("add-pic").addEventListener("tap", this.gallery, false);
 	},
 	submit: function(){
-		var formDom = document.getElementById("formDom");
-		mui.toast("提交反馈");
-		return;
-		request.ajax({url: Urls.changePassword, data: {appid: "APPID",member: member, password: oldPsw, change_password: change_password}}, function(data){
+		var formDom = document.getElementById("formDom"),
+			goodsName = formDom.goodsName.value,
+			factory = formDom.factory.value,
+			contactName = formDom.contactName.value,
+			contactNumber = formDom.contactNumber.value,
+			marketPrice = formDom.marketPrice.value,
+			supplyPrice = formDom.supplyPrice.value,
+			ispostage = formDom.ispostage.value,
+			goodsDesc = formDom.goodsDesc.value;
+			
+			
+		var check = (
+			!HzUtils.isEmpty(goodsName) && 
+			!HzUtils.isEmpty(factory) && 
+			!HzUtils.isEmpty(contactName) && 
+			!HzUtils.isEmpty(contactNumber) && 
+			!HzUtils.isEmpty(marketPrice) && 
+			!HzUtils.isEmpty(supplyPrice) && 
+			!HzUtils.isEmpty(goodsDesc));
+		if(!check){
+			mui.toast("请填写完成上面信息!");
+			return;
+		}
+		
+		if(HzUtils.isPhone(contactNumber)){
+			mui.toast("联系人电话错误")
+			return;
+		}
+		
+		
+		var requeseData = {
+			appid: "APPID",
+			goodName: goodsName,
+			factory: factory,
+			contactName: contactName,
+			contactNumber: contactNumber,
+			marketPrice: marketPrice,
+			supplyPrice: supplyPrice,
+			ispostage: ispostage,
+			goodDesc: goodsDesc
+		}
+		console.log("goodsDesc==="+JSON.stringify(requeseData));
+		request.ajax({url: Urls.addGoodsApply, data: requeseData}, function(data){
 			console.log(JSON.stringify(data));
 			mui.toast(data.msg);
-			if(data.code == 0) return;
-			mui.back();
 		}, null, true);
 	},
+	
+	
 	gallery: function(){
 		var len = $("#pic-wrapper .pic-item1").length;
 		page.galleryImgs(9-len, function(files){

@@ -65,6 +65,11 @@ input{font-size: 15px;}
 var page = {
 	init: function(){
 		this.initEvent();
+		this.initData();
+	},
+	initData: function(){
+		var phone = localStorage.getItem("phone");
+		if(phone) document.getElementById("member").value = phone;
 	},
 	initEvent: function(){
 		var getCodeBtn = document.getElementById("get_code"), submitBtn = document.getElementById("submitBtn");

@@ -89,6 +89,13 @@ span.evaluate{margin: 3px 5px 0 0;padding: 0px 3px;font-size: 12px;display: inli
 		//监听返回获取到options数据
 		window.addEventListener('postExtendOptions',function(e){
 			console.log("详情页数据："+JSON.stringify(e.detail.extendOptions));
+			
+			var data = e.detail.extendOptions;
+			if(data.isSlider){
+				page.isSlider = true;
+				page.getGoodsData(data.goodsId);
+				return;
+			}
 			page.data = e.detail.extendOptions;
 			page.init();
 		},false);
@@ -96,6 +103,7 @@ span.evaluate{margin: 3px 5px 0 0;padding: 0px 3px;font-size: 12px;display: inli
 	
 var page = {
 	data: null,
+	isSlider: false,
 	init: function(){
 		this.getDetails();
 		this.initEvent();
@@ -112,8 +120,31 @@ var page = {
 		}, false);
 		
 		document.getElementById("contact").addEventListener("tap", function(){
-			mui.confirm('Tel：13760252869', '在线时间 8:30 - 22:00', []);
+			mui.confirm('Tel：13760252869', '在线时间 8:30 - 22:00', ["确定"]);
 		}, false);
+		
+		mui("#detailcontent").on("tap", ".moreEvaluate", function(){
+			pushWebView({
+				webType: 'newWebview_Third',
+				id: 'Home/goods_comment_new_needtem.html',
+				href: 'Home/goods_comment_new_needtem.html',
+				aniShow: getaniShow(),
+				title: "商品评价",
+				isBars: false,
+				barsIcon: '',
+				extendOptions: {goodsId:  page.data.goodsId}
+			});
+		});
+		
+	},
+	getGoodsData: function(goodsId){
+		request.ajax({url: Urls.goodsDetailByApp, data: {appid: 'APPID',member_id: localStorage.getItem("memberId"), goods_id: goodsId}},function(data){
+			console.log(JSON.stringify(data));
+			if(data.code == 1){
+				page.data = data.data;
+				page.init();
+			}
+		}, null, true);
 	},
 	getDetails: function(id){
 		request.ajax({url: Urls.goodsContent, data: {appid: 'APPID', goods_id: this.data.goodsId}}, function(data){
@@ -123,12 +154,17 @@ var page = {
 			}
 		}, null, true);
 	},
-	banner: function(){
+	banner: function(imgages){
 		if(!this.data) return;
 		var data = [];
-		for(var i = 1; i < 8; i++){
-			if(this.data["img" + i]) data.push(this.data["img" + i]);
+		if(page.isSlider) {
+			data = page.data.images;
+		}else{
+			for(var i = 1; i < 8; i++){
+				if(this.data["img" + i]) data.push(this.data["img" + i]);
+			}
 		}
+		
 		var sliderItem = "", indicator = "";
 		for(var i = 0, ilen = data.length; i < ilen; i++){
 			sliderItem += "<div class='mui-slider-item'>"+

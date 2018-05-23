@@ -65,6 +65,7 @@
 	
 var page = {
 	userInfo: null,
+	Picker: null,
 	init: function(){
 		this.initData();
 		this.initEvent();
@@ -101,9 +102,11 @@ var page = {
 					});
 					break;
 				case "address":
-					var Picker = new mui.PopPicker({layer:3});
-					Picker.setData(cityData3);
-					Picker.show(function(items){
+					if(!_this.Picker){
+						_this.Picker = new mui.PopPicker({layer:3});
+						_this.Picker.setData(cityData3);
+					}
+					_this.Picker.show(function(items){
 						console.log(items[2].value +"------------"+ items[0].text +" "+items[1].text +" "+items[2].text);
 						_this.modifyAddress(items[2].value, /*items[0].text +" "+items[1].text +" "+*/items[2].text);
 					});

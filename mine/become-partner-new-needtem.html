@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
-<title>成为合伙人</title>
+<title>加盟微密</title>
 <link rel="stylesheet" type="text/css" href="../css/mui.min.css"/>
 <link rel="stylesheet" type="text/css" href="../css/own.css"/>
 <link rel="stylesheet" type="text/css" href="../css/iconfont.css"/>
@@ -105,15 +105,21 @@ var page = {
 			document.getElementById("refereeNum-wrapper").style.display = formDom.isReferee.value == 1? "block" : "none";
         });
 	},
+	checkPartnerMark: false,
 	checkPartner: function(){
+		if(this.checkPartnerMark) return;
+		this.checkPartnerMark = true;
 		request.ajax({url: Urls.isPartner, data: {appid: "APPID", memberId: localStorage.getItem("memberId")}}, function(data){
 			console.log(JSON.stringify(data));
+			this.checkPartnerMark = false;
 			if(data.code==1){
 				mui.confirm(data.msg, '提示', ['确认'], function(e) {
 					mui.back();
 				});
 			}
-		}, null, true);
+		}, function(error){
+			this.checkPartnerMark = false;
+		}, true);
 	},
 	getCodeMark: false,
 	getCode: function(){
@@ -189,21 +195,20 @@ var page = {
 			}
 			mui.toast("验证成功，正在提交申请...");
 			var ticket = data.data.ticket_code;
-			var requestData = {phone: member,password: hex_md5(password),ticket: ticket,appId: "APPID",memberId: localStorage.getItem("memberId"),partner: partner, isReferee: isReferee};
+			var requestData = {phone: member,password: hex_md5(password),ticket: ticket,appid: "APPID",memberId: localStorage.getItem("memberId"),partner: partner, isReferee: isReferee};
 			if(isReferee == 1) requestData.refNum = refereeNum;
 			
 			console.log("-------requestData-------" + JSON.stringify(requestData));
 			request.ajax({url: Urls.insertOrupdate, data: requestData}, function(data){
 				console.log("===========" + JSON.stringify(data));
+				mui.toast(data.msg);
 			 	if(typeof(data)!='object'){
                     mui.toast("系统错误，请稍后再试！");
                     return false;
                 }
                 if(data.code==1){
-                    mui.toast("操作成功！");
                     mui.back();
                 }else{
-                    mui.toast(data.msg);
                     mui.back();
                 }
 			});

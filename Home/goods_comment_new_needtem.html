@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta>
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+<title>E3父子模版</title>
+<link rel="stylesheet" type="text/css" href="../css/mui.min.css" />
+<link rel="stylesheet" type="text/css" href="../css/own.css" />
+<link rel="stylesheet" type="text/css" href="../css/iconfont.css" />
+<link rel="stylesheet" type="text/css" href="../css/jquery.fancybox.min.css" />
+<style type="text/css">
+ul{-webkit-margin-before: 0px!important;-webkit-margin-after: 0px!important;-webkit-padding-start: 0px!important;}
+
+.comment-list .star{height:12px;overflow:hidden;margin-top:5px;}
+.comment-list .star>div{float:left;margin-left:3px;height:12px;width:13px;}
+.comment-list .star>div:first-child{margin-left:0;}
+.comment-list .star .color{background:url(../img/icon_star.png);background-size:100% 100%;}
+.comment-list .star .gray{background:url(../img/icon_star_gray.png);background-size:100% 100%;}
+.comment-list .comment-item{padding: 10px 10px 4px;margin-top: 6px;border-bottom: 1px solid #ddd;border-top: 1px solid #ddd;background: #fff;}
+.comment-list .point_pic{width: 45px;height: 45px;border-radius: 50%;vertical-align: middle;margin:-3px 5px 0 0;}
+.comment-list .comment_content{padding:14px 0;}
+.comment-list .comment_img{overflow:hidden;}
+.comment-list .comment_img a{display:block;float:left;width: calc( (100vw - 38px ) / 4); height: calc( (100vw - 44px ) / 4);margin:0 6px 6px 0;}
+.comment-list .comment_img a:nth-child(4n){margin-right: 0px;}
+.comment-list .comment_img img{width: 100%; height: 100%;}
+
+
+</style>
+</head>
+
+<body>
+
+<div class="mui-content own-content-padding">
+	
+	<ul class="comment-list" id="comment-list">
+		<!--<li class="comment-item">
+			<div class="clear point_info">
+				<img src="../img/app-logo.png" class="point_pic  fl" />
+				<div class="fl">
+					<span class="point_name c2">123</span>
+					<div class="star">
+						<div class='color'></div>
+						<div class='color'></div>
+						<div class='color'></div>
+						<div class='color'></div>
+						<div class='gray'></div>
+					</div>
+				</div>
+				<span class="point_time fr fz12 c3">2018-08-08 10:13:44</span>
+			</div>
+			<div class='comment_content fz15'>内容内容内容内容内容内容内容内容内容</div>
+			<div class='comment_img'>
+				<a href="../img/1.jpg" data-fancybox="gallery">
+					<img src="../img/1.jpg"/>
+				</a>
+				<a href="../img/1.jpg" data-fancybox="gallery">
+					<img src="../img/1.jpg"/>
+				</a>
+				<a href="../img/1.jpg" data-fancybox="gallery">
+					<img src="../img/1.jpg"/>
+				</a>
+				<a href="../img/1.jpg" data-fancybox="gallery">
+					<img src="../img/1.jpg"/>
+				</a>
+				<a href="../img/1.jpg" data-fancybox="gallery">
+					<img src="../img/1.jpg"/>
+				</a>
+				<a href="../img/1.jpg" data-fancybox="gallery">
+					<img src="../img/1.jpg"/>
+				</a>
+			</div>
+		</li>-->
+	</ul>
+	
+</div>
+<script src="../js/jquery-1.11.1.min.js"></script>
+<script src="../js/jquery.fancybox.min.lazy.js"></script>
+<script src="../js/mui.min.js"></script>
+<script src="../js/mui.pullToRefresh.js"></script>
+<script src="../js/mui.pullToRefresh.material.js"></script>
+<script src="../js/own.js"></script>
+<script src="../js/ajax.js"></script>
+<script src="../js/Urls.js"></script>
+<script type="text/javascript">
+
+	mui.init({
+		swipeBack: true,
+		keyEventBind: {
+			backbutton: true
+		}
+	});
+
+	mui.plusReady(function() {
+		mui.fire(plus.webview.currentWebview().parent(), 'getExtendOptions', {});
+		window.addEventListener('postExtendOptions', function(e) {
+			console.log(JSON.stringify(e.detail.extendOptions));
+			page.goods_id = e.detail.extendOptions.goodsId;
+			page.init();
+		}, false);
+		
+		var back = mui.back;
+		mui.back=function(){
+		 	$("html").hasClass("fancybox-enabled") ? $.fancybox.close() : back();
+		}
+	});
+	
+var page = {
+	pullToRefresh: null,
+	goods_id: 0,
+	init: function(){
+		this.getComment();
+		this.initEvent();
+	},
+	initEvent: function(){
+		// 设置下拉刷新
+		var _this = this;
+		mui(".mui-content").pullToRefresh({
+			down: {
+				callback: function(){
+					_this.pullToRefresh = this;
+					_this.getComment(true);
+				}
+			}
+		});
+	},
+	getComment: function(mark){
+		var _this = this;
+		request.ajax({url: Urls.goodsComment,data:  {appid: "APPID", goods_id: page.goods_id,page: 1,page_num: 100}}, function(data){
+			if(mark) _this.pullToRefresh.endPullDownToRefresh();
+			console.log(JSON.stringify(data));
+			_this.commentHtml(data.data);
+		}, function(){
+			if(mark) _this.pullToRefresh.endPullDownToRefresh();
+		}, true);
+	},
+	commentHtml: function(data){
+		var i = 0, ilen = data ? data.length : 0, html;
+		if(!ilen){
+			document.getElementById("comment-list").innerHTML = pageStatus.notResult;
+			return;
+		}
+		for( ; i < ilen; i++) {
+			html += "<li class='comment-item'>"+
+					"	<div class='clear point_info'>"+
+					"		<img src='../img/app-logo.png' class='point_pic  fl' />"+
+					"		<div class='fl'>"+
+					"			<span class='point_name c2'>"+(data[i].user_name?data[i].user_name:'微蜜匠心用户')+"</span>"+
+					"			<div class='star'>";
+						var rank = data[i].comment_rank, gray_rank = 5-rank;
+						for(var r=0;r<rank;r++){
+							html+="<div class='color'></div>";
+						}
+						for(var g_r = 0;g_r<gray_rank;g_r++){
+							html+="<div class='gray'></div>";
+						}
+					html += "</div>"+
+					"		</div>"+
+					"		<span class='point_time fr fz12 c3'>"+data[i].add_time+"</span>"+
+					"	</div>"+
+					"	<div class='comment_content fz15'>"+data[i].content+"</div>"+
+					"	<div class='comment_img'>";
+						var img_obj = data[i].pics, img_l = img_obj.length;
+						for(var j=0;j<img_l;j++){
+							//html+="<img src='"+img_obj[j]+"'>";
+							html+="<a href='"+img_obj[j]+"' data-fancybox='gallery"+i+"'>"+
+							"	<img src='"+img_obj[j]+"'/>"+
+							"</a>"
+						}
+					html += "</div>"+
+					"</li>";
+		}
+		document.getElementById("comment-list").innerHTML = html;
+	}
+}
+	
+</script>
+
+</body>
+
+</html>
