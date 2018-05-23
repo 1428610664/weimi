@@ -162,7 +162,7 @@
 		        });
 		    },function(e){
 		    	mui.toast("安装失败");
-		    	mui.toast("安装wgt文件失败["+e.code+"]："+e.message);
+		    	//mui.toast("安装wgt文件失败["+e.code+"]："+e.message);
 		        plus.nativeUI.closeWaiting();
 		    });
 		}

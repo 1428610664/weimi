@@ -287,6 +287,13 @@
 					"mine/login.html"
 				],
 				"priority": 0
+			},
+			"mine/feedback-new-needtem.html": {
+				"resources": [],
+				"refer": [
+					"mine/address-new-needtem.html"
+				],
+				"priority": 0
 			}
 		},
 		"idle": {
